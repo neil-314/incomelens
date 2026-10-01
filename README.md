@@ -46,3 +46,16 @@ The page is rendered on the server. Clicking a tab or applying a filter requests
 
 1. Click **Connect Sandbox**. Python requests a Link token from Plaid.
 2. Plaid opens a fake-bank login window.
+3. The browser sends the returned public token to Python.
+4. Python exchanges it for a private access token and encrypts it in an HttpOnly cookie.
+5. Python fetches simulated transactions, applies the rules and renders the page.
+
+Create a developer account at https://dashboard.plaid.com/signup. Copy `.env.example` to `.env.local`, and fill in `PLAID_CLIENT_ID`, the **Sandbox** `PLAID_SECRET`, and a random `SESSION_SECRET` of at least 32 characters. Generate that secret locally with `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Keep the result private. Restart after editing environment variables.
+
+On Vercel, add those same three variables under **IncomeLens → Settings → Environment Variables** and redeploy. Never put them in GitHub, chat, screenshots or logs.
+
+For a transaction-focused test account, search for **First Platypus Bank**, use username `user_transactions_dynamic` and password `pass_good`, then select a checking account. If Plaid asks for a phone number, skip the step if offered, or use the Sandbox profile `415-555-0136` with verification code `123456`. No text message will arrive. These are public test details, not real account credentials. See [Plaid's test credentials](https://plaid.com/docs/sandbox/test-credentials/) and [Sandbox phone profiles](https://plaid.com/docs/link/returning-user/#testing-in-sandbox).
+
+If transaction history is still loading, press **Refresh** shortly afterward. A connected test account may have no transactions or paychecks; the app explains this instead of showing empty history as zero income. Choose sample data to explore regular payroll and freelance income without a bank connection.
+
+## Rules and limits
