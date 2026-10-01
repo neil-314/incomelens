@@ -20,3 +20,16 @@ Install Python 3.12, then:
 python -m venv .venv
 # Windows:
 .venv\Scripts\activate
+# macOS / Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python -m uvicorn app:app --reload --port 8000
+```
+
+Open http://127.0.0.1:8000. Sample data works without accounts or secrets.
+
+## Four files to understand
+
+| File | What to read it for |
+| --- | --- |
+| `app.py` | Routes: show a page, export records, connect/disconnect Plaid |
+| `pipeline.py` | Clean descriptions, classify records, calculate monthly totals |
