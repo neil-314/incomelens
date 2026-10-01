@@ -8,3 +8,15 @@ Understand monthly income, recurring payment sources and cash flow, with rules y
 
 IncomeLens explores how bank transactions can answer three questions: how much income arrives each month, where it comes from, and how much it varies. It is a working prototype for salary and freelance income analysis, using simulated records only.
 
+Start with the sample dataset; no login is required. Review the Overview, search and filter Transactions, then open Data pipeline to compare original descriptions with cleaned names and classification rules. The page includes a separate Plaid Sandbox guide for testing the bank connection. Test banks may have no transactions or income, so sample data is the easiest way to explore all features. Stability describes past income variation; it is not a credit score or forecast.
+
+![IncomeLens introduction and guide](docs/introduction.jpg)
+
+## Run it
+
+Install Python 3.12, then:
+
+```sh
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
