@@ -97,3 +97,16 @@ async def export(request: Request):
             "Content-Disposition": 'attachment; filename="incomelens-cleaned.json"'
         },
     )
+
+
+@app.get("/api/plaid")
+async def status():
+    return {"configured": plaid.configured()}
+
+
+@app.post("/api/plaid")
+async def plaid_action(request: Request):
+    # Only this site's browser pages may perform private Plaid actions.
+    origin = urlparse(request.headers.get("origin", ""))
+    if origin.scheme not in {"http", "https"} or origin.netloc != request.headers.get(
+        "host"
