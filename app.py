@@ -47,3 +47,15 @@ async def page_records(request):
             records = await plaid.ingest(access_token)
             if not records:
                 message = (
+                    "Connected successfully, but Plaid returned no transactions for this test account. "
+                    "You can show sample data, or disconnect and try another Sandbox checking account."
+                )
+        except plaid.SandboxError as error:
+            message = plaid.error_message(error)
+    return clean_transactions(records), connected, mode, message
+
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    rows, connected, mode, message = await page_records(request)
+    currencies = sorted(
