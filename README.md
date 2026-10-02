@@ -59,3 +59,15 @@ For a transaction-focused test account, search for **First Platypus Bank**, use 
 If transaction history is still loading, press **Refresh** shortly afterward. A connected test account may have no transactions or paychecks; the app explains this instead of showing empty history as zero income. Choose sample data to explore regular payroll and freelance income without a bank connection.
 
 ## Rules and limits
+
+- Plaid uses negative amounts for incoming money. A posted credit counts as income when its category or description indicates income.
+- Exclude transfers, refunds and pending records. Flag unrecognized credits for review.
+- Deduplicate by transaction ID, keeping the latest version. Invalid dates and non-finite amounts are dropped.
+- Net cash flow is classified income minus expenses; it excludes unknown credits and transfers.
+- Keep currencies separate; no exchange-rate conversion.
+- The chart covers six previous months plus the current partial month.
+- Stability is `max(0, 100 × (1 − standard deviation / average))`. It uses completed months with records and needs at least three. An expense-only month counts as zero income; absent history is skipped.
+- A source is recurring if it appears in three distinct months. Text grouping can merge or split sources incorrectly. This is not a payday forecast or credit assessment.
+
+## Storage and security
+
