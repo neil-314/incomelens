@@ -84,3 +84,16 @@ No real banks are supported: the Plaid endpoint is fixed to Sandbox. The product
 ```sh
 pip install -r requirements-dev.txt
 python -m pytest tests/test_pipeline.py tests/test_server.py
+python -m ruff check app.py pipeline.py plaid.py views.py tests
+# With the local server running:
+python -m playwright install chromium
+python -m pytest tests/test_browser.py
+```
+
+The tests cover cleaning, currency separation, partial history, cents, year boundaries, paginated additions/modifications/removals, retry limits, origin checks, encrypted cookies, HTML escaping, exports and desktop/mobile navigation. GitHub Actions runs these checks with Python.
+
+## Deployment
+
+The repository is linked to the existing Vercel project. `vercel.json` selects FastAPI and `.python-version` selects Python 3.12. There is no Node build. Pushes to `main` trigger deployment, or use `vercel deploy --prod`.
+
+The previous TypeScript version is preserved in Git history and the local `before-python-migration` tag. Real banking would require authentication, durable encrypted storage, rate limits, webhook verification and consent/deletion flows.
