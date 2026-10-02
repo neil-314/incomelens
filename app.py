@@ -85,3 +85,15 @@ async def home(request: Request):
     )
 
 
+@app.get("/export")
+async def export(request: Request):
+    rows, _, _, message = await page_records(request)
+    if message and not rows:
+        return JSONResponse({"error": message}, status_code=502)
+    return Response(
+        json.dumps(rows, indent=2),
+        media_type="application/json",
+        headers={
+            "Content-Disposition": 'attachment; filename="incomelens-cleaned.json"'
+        },
+    )
