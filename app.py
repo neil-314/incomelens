@@ -59,3 +59,16 @@ async def page_records(request):
 async def home(request: Request):
     rows, connected, mode, message = await page_records(request)
     currencies = sorted(
+        {
+            "USD",
+            *(row["iso_currency_code"] for row in rows if row.get("iso_currency_code")),
+        }
+    )
+    currency = request.query_params.get("currency", "USD")
+    if currency not in currencies:
+        currency = "USD"
+    view = request.query_params.get("view", "overview")
+    if view not in {"overview", "transactions", "pipeline"}:
+        view = "overview"
+    report = analyze(rows, currency)
+    return render_page(
