@@ -97,3 +97,5 @@ The tests cover cleaning, currency separation, partial history, cents, year boun
 The repository is linked to the existing Vercel project. `vercel.json` selects FastAPI and `.python-version` selects Python 3.12. There is no Node build. Pushes to `main` trigger deployment, or use `vercel deploy --prod`.
 
 The previous TypeScript version is preserved in Git history and the local `before-python-migration` tag. Real banking would require authentication, durable encrypted storage, rate limits, webhook verification and consent/deletion flows.
+
+References: https://vercel.com/docs/frameworks/backend/fastapi · https://plaid.com/docs/link/web/ · https://plaid.com/docs/api/transactions/#transactionssync
