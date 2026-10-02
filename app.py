@@ -34,3 +34,16 @@ async def page_records(request):
     if cookie:
         try:
             access_token = plaid.decrypt_token(cookie)
+            connected = True
+        except plaid.SandboxError as error:
+            message = plaid.error_message(error)
+    mode = request.query_params.get("mode", "sandbox" if connected else "demo")
+    mode = "sandbox" if mode == "sandbox" else "demo"
+    records = demo_transactions() if mode == "demo" else []
+    if mode == "sandbox":
+        try:
+            if not access_token:
+                raise plaid.SandboxError("SESSION")
+            records = await plaid.ingest(access_token)
+            if not records:
+                message = (
