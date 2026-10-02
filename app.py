@@ -72,3 +72,16 @@ async def home(request: Request):
         view = "overview"
     report = analyze(rows, currency)
     return render_page(
+        rows,
+        report,
+        currencies,
+        currency,
+        view,
+        mode,
+        connected,
+        message,
+        request.query_params.get("q", ""),
+        request.query_params.get("kind", "all"),
+    )
+
+
