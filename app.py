@@ -136,3 +136,15 @@ async def plaid_action(request: Request):
         if action == "exchange":
             public_token = body.get("public_token")
             if (
+                not isinstance(public_token, str)
+                or not public_token
+                or len(public_token) > 1000
+            ):
+                return JSONResponse({"error": "Invalid token."}, status_code=400)
+            data = await plaid.call(
+                "/item/public_token/exchange", {"public_token": public_token}
+            )
+            response = JSONResponse({"connected": True})
+            response.set_cookie(
+                plaid.COOKIE,
+                plaid.encrypt_token(data["access_token"]),
