@@ -23,3 +23,16 @@ def clean_transactions(records):
         for row in records
         if isinstance(row.get("transaction_id"), str)
     }
+    cleaned = []
+    for row in unique.values():
+        try:
+            transaction_date = date.fromisoformat(row["date"])
+            amount = float(row["amount"])
+            if transaction_date.isoformat() != row["date"] or not math.isfinite(amount):
+                continue
+        except (KeyError, ValueError, TypeError):
+            continue
+        name = str(row.get("name", "Unknown transaction"))
+        uppercase = name.upper()
+        category = (row.get("personal_finance_category") or {}).get("primary", "")
+        kind, reason = (
