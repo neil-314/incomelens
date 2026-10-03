@@ -148,3 +148,16 @@ async def plaid_action(request: Request):
             response.set_cookie(
                 plaid.COOKIE,
                 plaid.encrypt_token(data["access_token"]),
+                httponly=True,
+                secure=bool(os.getenv("VERCEL")) or request.url.scheme == "https",
+                samesite="strict",
+                max_age=7200,
+                path="/",
+            )
+            return response
+        if action == "sync":
+            return {
+                "transactions": await plaid.ingest(
+                    plaid.decrypt_token(request.cookies.get(plaid.COOKIE))
+                )
+            }
