@@ -110,3 +110,16 @@ async def plaid_action(request: Request):
     origin = urlparse(request.headers.get("origin", ""))
     if origin.scheme not in {"http", "https"} or origin.netloc != request.headers.get(
         "host"
+    ):
+        return JSONResponse({"error": "Invalid request origin."}, status_code=403)
+    try:
+        body = await request.json()
+        if not isinstance(body, dict):
+            raise TypeError()
+    except (ValueError, TypeError):
+        return JSONResponse({"error": "Invalid request body."}, status_code=400)
+    try:
+        action = body.get("action")
+        if action == "link":
+            data = await plaid.call(
+                "/link/token/create",
