@@ -11,3 +11,15 @@ def month_keys(today):
     """Six previous calendar months plus the current month, across year boundaries."""
     end = today.year * 12 + today.month - 1
     return [
+        f"{number // 12:04d}-{number % 12 + 1:02d}"
+        for number in range(end - 6, end + 1)
+    ]
+
+
+def clean_transactions(records):
+    # Last version wins if Plaid returns the same transaction ID more than once.
+    unique = {
+        row["transaction_id"]: row
+        for row in records
+        if isinstance(row.get("transaction_id"), str)
+    }
