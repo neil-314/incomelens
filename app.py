@@ -161,3 +161,16 @@ async def plaid_action(request: Request):
                     plaid.decrypt_token(request.cookies.get(plaid.COOKIE))
                 )
             }
+        if action == "disconnect":
+            cookie = request.cookies.get(plaid.COOKIE)
+            if cookie:
+                await plaid.call(
+                    "/item/remove", {"access_token": plaid.decrypt_token(cookie)}
+                )
+            response = JSONResponse({"connected": False})
+            response.delete_cookie(plaid.COOKIE, path="/")
+            return response
+        return JSONResponse({"error": "Unknown action."}, status_code=400)
+    except plaid.SandboxError as error:
+        code = {"CONFIG": 503, "SESSION": 401}.get(str(error), 502)
+        return JSONResponse({"error": plaid.error_message(error)}, status_code=code)
