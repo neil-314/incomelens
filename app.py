@@ -123,3 +123,16 @@ async def plaid_action(request: Request):
         if action == "link":
             data = await plaid.call(
                 "/link/token/create",
+                {
+                    "client_name": "IncomeLens",
+                    "language": "en",
+                    "country_codes": ["US"],
+                    "user": {"client_user_id": str(uuid.uuid4())},
+                    "products": ["transactions"],
+                    "transactions": {"days_requested": 210},
+                },
+            )
+            return {"link_token": data["link_token"]}
+        if action == "exchange":
+            public_token = body.get("public_token")
+            if (
