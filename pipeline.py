@@ -87,3 +87,16 @@ def analyze(records, currency="USD", today=None):
             "label": date.fromisoformat(key + "-01").strftime("%b"),
             "income": Decimal(0),
             "expenses": Decimal(0),
+        }
+        for key in keys
+    ]
+    eligible = [
+        row
+        for row in records
+        if row.get("iso_currency_code") == currency
+        and row["date"] <= today.isoformat()
+        and not row.get("pending")
+        and row["date"][:7] in keys
+    ]
+    for row in eligible:
+        month = months[keys.index(row["date"][:7])]
