@@ -176,3 +176,10 @@ def demo_transactions(today=None):
                         "amount": amount,
                         "iso_currency_code": "USD",
                         "pending": False,
+                        "personal_finance_category": {
+                            "primary": category,
+                            "detailed": category,
+                        },
+                    }
+                )
+    return records
