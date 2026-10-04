@@ -74,3 +74,16 @@ def clean_transactions(records):
                 "kind": kind,
                 "reason": reason,
             }
+        )
+    return sorted(cleaned, key=lambda row: row["date"], reverse=True)
+
+
+def analyze(records, currency="USD", today=None):
+    today = today or date.today()
+    keys = month_keys(today)
+    months = [
+        {
+            "month": key,
+            "label": date.fromisoformat(key + "-01").strftime("%b"),
+            "income": Decimal(0),
+            "expenses": Decimal(0),
