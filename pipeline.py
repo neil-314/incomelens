@@ -36,3 +36,16 @@ def clean_transactions(records):
         uppercase = name.upper()
         category = (row.get("personal_finance_category") or {}).get("primary", "")
         kind, reason = (
+            "review",
+            "Unrecognized credit; excluded from income until reviewed.",
+        )
+        if row.get("pending"):
+            reason = "Pending transaction; excluded until posted."
+        elif category.startswith("TRANSFER") or re.search(
+            r"TRANSFER|REFUND|REVERSAL|CASHBACK", uppercase
+        ):
+            kind, reason = "transfer", "Transfer or returned money, not earned income."
+        elif amount > 0:
+            kind, reason = (
+                "expense",
+                "Positive Plaid amounts represent money leaving the account.",
