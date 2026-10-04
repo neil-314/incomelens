@@ -49,3 +49,15 @@ def clean_transactions(records):
             kind, reason = (
                 "expense",
                 "Positive Plaid amounts represent money leaving the account.",
+            )
+        elif amount < 0 and (
+            category == "INCOME"
+            or re.search(r"PAYROLL|SALARY|FREELANCE|CLIENT PAYMENT", uppercase)
+        ):
+            kind, reason = (
+                "income",
+                "Posted credit with an income category or recognizable income description.",
+            )
+        source = re.sub(
+            r"PAYROLL|SALARY|DIRECT DEP(?:OSIT)?|FREELANCE|CLIENT PAYMENT|\*|\d+",
+            " ",
