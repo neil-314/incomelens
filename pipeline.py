@@ -163,3 +163,16 @@ def demo_transactions(today=None):
             (2, "RENT GREENWOOD", 1650, "RENT_AND_UTILITIES"),
             (6, "GROCERY MARKET", 245 + (6 - index) * 12, "FOOD_AND_DRINK"),
             (7, "TRANSFER SAVINGS", -400, "TRANSFER_IN"),
+            (8, "UNIDENTIFIED DEPOSIT", -90, "OTHER_INFLOW"),
+        ]
+        for day, name, amount, category in examples:
+            transaction_date = f"{month}-{day:02d}"
+            if transaction_date <= today.isoformat():
+                records.append(
+                    {
+                        "transaction_id": f"{month}-{name}-{day}",
+                        "date": transaction_date,
+                        "name": name,
+                        "amount": amount,
+                        "iso_currency_code": "USD",
+                        "pending": False,
