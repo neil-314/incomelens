@@ -61,3 +61,16 @@ def clean_transactions(records):
         source = re.sub(
             r"PAYROLL|SALARY|DIRECT DEP(?:OSIT)?|FREELANCE|CLIENT PAYMENT|\*|\d+",
             " ",
+            uppercase,
+        )
+        source = " ".join(source.split()).title() or name
+        # Keep raw fields alongside the cleaned result so every decision is traceable.
+        cleaned.append(
+            {
+                **row,
+                "amount": amount,
+                "name": name,
+                "source": source,
+                "kind": kind,
+                "reason": reason,
+            }
