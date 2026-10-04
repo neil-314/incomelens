@@ -138,3 +138,15 @@ def analyze(records, currency="USD", today=None):
         )
     for month in months:
         month["income"], month["expenses"] = (
+            float(month["income"]),
+            float(month["expenses"]),
+        )
+    return {
+        "months": months,
+        "current": months[-1],
+        "average": average,
+        "score": score,
+        "complete_months": len(history),
+        "sources": sorted(sources, key=lambda source: source["total"], reverse=True),
+        "review": sum(row["kind"] == "review" for row in records),
+    }
