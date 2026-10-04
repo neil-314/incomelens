@@ -16,3 +16,16 @@ class SandboxError(Exception):
 
 def configured():
     return bool(
+        os.getenv("PLAID_CLIENT_ID")
+        and os.getenv("PLAID_SECRET")
+        and len(os.getenv("SESSION_SECRET", "")) >= 32
+    )
+
+
+def cipher():
+    if not configured():
+        raise SandboxError("CONFIG")
+    key = hashlib.sha256(os.environ["SESSION_SECRET"].encode()).digest()
+    return Fernet(base64.urlsafe_b64encode(key))
+
+
