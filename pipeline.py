@@ -150,3 +150,16 @@ def analyze(records, currency="USD", today=None):
         "sources": sorted(sources, key=lambda source: source["total"], reverse=True),
         "review": sum(row["kind"] == "review" for row in records),
     }
+
+
+def demo_transactions(today=None):
+    today = today or date.today()
+    records = []
+    for index, month in enumerate(month_keys(today)):
+        examples = [
+            (1, "PAYROLL ACME STUDIO", -2400, "INCOME"),
+            (15, "PAYROLL ACME STUDIO", -2400, "INCOME"),
+            (5, "FREELANCE NORTHSTAR", -(650 + (6 - index) * 45), "INCOME"),
+            (2, "RENT GREENWOOD", 1650, "RENT_AND_UTILITIES"),
+            (6, "GROCERY MARKET", 245 + (6 - index) * 12, "FOOD_AND_DRINK"),
+            (7, "TRANSFER SAVINGS", -400, "TRANSFER_IN"),
