@@ -112,3 +112,16 @@ def analyze(records, currency="USD", today=None):
     average = statistics.mean(history) if history else 0
     score = None
     if len(history) >= 3 and average > 0:
+        score = math.floor(
+            max(0, 100 * (1 - statistics.pstdev(history) / average)) + 0.5
+        )
+    sources = []
+    for source in sorted(
+        {row["source"] for row in eligible if row["kind"] == "income"}
+    ):
+        payments = [
+            row
+            for row in eligible
+            if row["kind"] == "income" and row["source"] == source
+        ]
+        distinct_months = len({row["date"][:7] for row in payments})
