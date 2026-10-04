@@ -125,3 +125,16 @@ def analyze(records, currency="USD", today=None):
             if row["kind"] == "income" and row["source"] == source
         ]
         distinct_months = len({row["date"][:7] for row in payments})
+        sources.append(
+            {
+                "source": source,
+                "total": float(
+                    sum((-Decimal(str(row["amount"])) for row in payments), Decimal(0))
+                ),
+                "count": len(payments),
+                "months": distinct_months,
+                "recurring": distinct_months >= 3,
+            }
+        )
+    for month in months:
+        month["income"], month["expenses"] = (
