@@ -100,3 +100,15 @@ def analyze(records, currency="USD", today=None):
     ]
     for row in eligible:
         month = months[keys.index(row["date"][:7])]
+        amount = Decimal(str(row["amount"])).quantize(Decimal("0.01"))
+        if row["kind"] == "income":
+            month["income"] -= amount
+        elif row["kind"] == "expense":
+            month["expenses"] += amount
+    observed = {row["date"][:7] for row in eligible}
+    history = [
+        float(month["income"]) for month in months[:-1] if month["month"] in observed
+    ]
+    average = statistics.mean(history) if history else 0
+    score = None
+    if len(history) >= 3 and average > 0:
