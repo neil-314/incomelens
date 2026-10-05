@@ -42,3 +42,15 @@ def decrypt_token(cookie):
         raise SandboxError("SESSION") from None
 
 
+async def call(path, body):
+    if not configured():
+        raise SandboxError("CONFIG")
+    try:
+        async with httpx.AsyncClient(timeout=20) as client:
+            response = await client.post(
+                "https://sandbox.plaid.com" + path,
+                json={
+                    "client_id": os.environ["PLAID_CLIENT_ID"],
+                    "secret": os.environ["PLAID_SECRET"],
+                    **body,
+                },
