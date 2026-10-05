@@ -54,3 +54,16 @@ async def call(path, body):
                     "secret": os.environ["PLAID_SECRET"],
                     **body,
                 },
+            )
+        data = response.json()
+    except (httpx.HTTPError, ValueError):
+        raise SandboxError("PLAID") from None
+    if response.is_error:
+        code = (
+            "RETRY_SYNC"
+            if data.get("error_code") == "TRANSACTIONS_SYNC_MUTATION_DURING_PAGINATION"
+            else "PLAID"
+        )
+        raise SandboxError(code)
+    return data
+
