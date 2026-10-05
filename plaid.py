@@ -29,3 +29,16 @@ def cipher():
     return Fernet(base64.urlsafe_b64encode(key))
 
 
+def encrypt_token(access_token):
+    return cipher().encrypt(access_token.encode()).decode()
+
+
+def decrypt_token(cookie):
+    if not cookie:
+        raise SandboxError("SESSION")
+    try:
+        return cipher().decrypt(cookie.encode(), ttl=7200).decode()
+    except (InvalidToken, ValueError):
+        raise SandboxError("SESSION") from None
+
+
