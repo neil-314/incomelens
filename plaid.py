@@ -67,3 +67,16 @@ async def call(path, body):
         raise SandboxError(code)
     return data
 
+
+async def ingest(access_token, fetch_page=None):
+    """Rebuild from the initial cursor; no database required for this small demo."""
+    fetch_page = fetch_page or call
+    for attempt in range(3):
+        rows, cursor = {}, None
+        try:
+            for _ in range(100):
+                body = {"access_token": access_token, "count": 500}
+                if cursor is not None:
+                    body["cursor"] = cursor
+                page = await fetch_page("/transactions/sync", body)
+                for row in page["added"] + page["modified"]:
