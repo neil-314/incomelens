@@ -93,3 +93,14 @@ async def ingest(access_token, fetch_page=None):
                     return list(rows.values())
             raise SandboxError("LIMIT")
         except SandboxError as error:
+            if str(error) != "RETRY_SYNC" or attempt == 2:
+                raise
+    raise SandboxError("LIMIT")
+
+
+def error_message(error):
+    return {
+        "CONFIG": "Plaid Sandbox needs server environment variables. Sample data is ready.",
+        "SESSION": "Connection expired. Connect your Sandbox again.",
+        "NOT_READY": "Connected successfully. Plaid has not finished preparing transaction history. Try Refresh shortly; these are not zero-income results.",
+    }.get(str(error), "Sandbox request failed. Please retry shortly.")
