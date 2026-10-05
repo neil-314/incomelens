@@ -80,3 +80,16 @@ async def ingest(access_token, fetch_page=None):
                     body["cursor"] = cursor
                 page = await fetch_page("/transactions/sync", body)
                 for row in page["added"] + page["modified"]:
+                    rows[row["transaction_id"]] = row
+                for removed in page["removed"]:
+                    rows.pop(removed["transaction_id"], None)
+                cursor = page["next_cursor"]
+                if not page["has_more"]:
+                    if not rows and page.get("transactions_update_status") not in {
+                        "INITIAL_UPDATE_COMPLETE",
+                        "HISTORICAL_UPDATE_COMPLETE",
+                    }:
+                        raise SandboxError("NOT_READY")
+                    return list(rows.values())
+            raise SandboxError("LIMIT")
+        except SandboxError as error:
