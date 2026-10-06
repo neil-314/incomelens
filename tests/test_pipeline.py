@@ -72,3 +72,15 @@ def test_stable_income_currency_and_future_dates():
     assert result["sources"][0]["recurring"]
 
 
+def test_missing_and_zero_income_months():
+    assert analyze([], today=date(2026, 9, 10))["score"] is None
+    rows = [
+        raw(date="2026-06-01"),
+        raw(transaction_id="b", date="2026-07-01"),
+        raw(transaction_id="c", date="2026-08-01", name="COFFEE", amount=10),
+    ]
+    assert analyze(clean_transactions(rows), today=date(2026, 9, 10))["score"] == 29
+
+
+def test_cents_are_not_lost():
+    rows = clean_transactions(
