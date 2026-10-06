@@ -46,3 +46,16 @@ def test_deduplication_and_validation():
             raw(),
             raw(amount=-1200),
             raw(transaction_id="bad-number", amount=float("nan")),
+            raw(transaction_id="bad-date", date="2026-02-30"),
+            raw(transaction_id="bad-format", date="20260801"),
+        ]
+    )
+    assert len(rows) == 1
+    assert rows[0]["amount"] == -1200
+
+
+def test_stable_income_currency_and_future_dates():
+    rows = [
+        raw(transaction_id=month, date=f"2026-{month}-01")
+        for month in ["06", "07", "08", "09"]
+    ]
