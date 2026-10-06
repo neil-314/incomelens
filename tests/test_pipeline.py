@@ -33,3 +33,16 @@ def test_classification_rules():
     assert {row["transaction_id"]: row["kind"] for row in rows} == {
         "one": "income",
         "pending": "review",
+        "transfer": "transfer",
+        "refund": "transfer",
+        "unknown": "review",
+        "expense": "expense",
+    }
+
+
+def test_deduplication_and_validation():
+    rows = clean_transactions(
+        [
+            raw(),
+            raw(amount=-1200),
+            raw(transaction_id="bad-number", amount=float("nan")),
