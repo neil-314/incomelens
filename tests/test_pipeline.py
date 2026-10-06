@@ -59,3 +59,16 @@ def test_stable_income_currency_and_future_dates():
         raw(transaction_id=month, date=f"2026-{month}-01")
         for month in ["06", "07", "08", "09"]
     ]
+    rows += [
+        raw(transaction_id="cad", amount=-9000, iso_currency_code="CAD"),
+        raw(transaction_id="future", amount=-9000, date="2026-09-30"),
+        raw(transaction_id="old", amount=-99999, date="2020-01-01"),
+    ]
+    result = analyze(clean_transactions(rows), today=date(2026, 9, 10))
+    assert result["score"] == 100
+    assert result["average"] == 1000
+    assert result["current"]["income"] == 1000
+    assert result["sources"][0]["total"] == 4000
+    assert result["sources"][0]["recurring"]
+
+
