@@ -21,3 +21,15 @@ def raw(**changes):
 
 def test_classification_rules():
     rows = clean_transactions(
+        [
+            raw(),
+            raw(transaction_id="pending", pending=True),
+            raw(transaction_id="transfer", name="TRANSFER SAVINGS"),
+            raw(transaction_id="refund", name="SHOP REFUND"),
+            raw(transaction_id="unknown", name="ATM CREDIT"),
+            raw(transaction_id="expense", name="COFFEE", amount=20),
+        ]
+    )
+    assert {row["transaction_id"]: row["kind"] for row in rows} == {
+        "one": "income",
+        "pending": "review",
