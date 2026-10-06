@@ -41,3 +41,6 @@ def test_browser():
         page.screenshot(path="docs/mobile.png", full_page=True)
         assert page.evaluate(
             "document.documentElement.scrollWidth <= window.innerWidth"
+        )
+        assert errors == []
+        browser.close()
