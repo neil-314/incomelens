@@ -16,3 +16,16 @@ def test_browser():
         expect(
             page.get_by_role("heading", name="IncomeLens", exact=True)
         ).to_be_visible()
+        expect(page.locator("svg rect")).to_have_count(14)
+        page.screenshot(path="docs/dashboard.png", full_page=True)
+        with page.expect_download() as download:
+            page.get_by_role("link", name="Export JSON").click()
+        assert download.value.suggested_filename == "incomelens-cleaned.json"
+        page.get_by_role("link", name="Data pipeline", exact=True).click()
+        page.get_by_label("Classification").select_option("review")
+        page.get_by_role("button", name="Apply", exact=True).click()
+        expect(page.locator("tbody tr").first).to_contain_text("Unrecognized credit")
+        page.screenshot(path="docs/pipeline.png", full_page=True)
+        page.get_by_role("link", name="Transactions", exact=True).click()
+        page.get_by_label("Search transactions").fill("no-matching-entry")
+        page.get_by_role("button", name="Apply", exact=True).click()
