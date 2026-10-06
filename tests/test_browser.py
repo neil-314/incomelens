@@ -29,3 +29,15 @@ def test_browser():
         page.get_by_role("link", name="Transactions", exact=True).click()
         page.get_by_label("Search transactions").fill("no-matching-entry")
         page.get_by_role("button", name="Apply", exact=True).click()
+        expect(page.get_by_text("No matching transactions.")).to_be_visible()
+        page.get_by_role("link", name="Overview", exact=True).click()
+        page.wait_for_load_state("load")
+        page.get_by_role("button", name="Connect Sandbox", exact=True).click()
+        expect(page.get_by_role("status")).to_contain_text(
+            "needs server environment variables"
+        )
+        page.goto(base)
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.screenshot(path="docs/mobile.png", full_page=True)
+        assert page.evaluate(
+            "document.documentElement.scrollWidth <= window.innerWidth"
