@@ -110,3 +110,15 @@ def test_sync_additions_modifications_and_removals():
                 "has_more": True,
             }
         return {
+            "added": [],
+            "modified": [raw(amount=-1500)],
+            "removed": [{"transaction_id": "removed"}],
+            "next_cursor": "done",
+            "has_more": False,
+        }
+
+    records = asyncio.run(ingest("test-token", page))
+    assert len(records) == 1
+    assert records[0]["amount"] == -1500
+    assert bodies[1]["cursor"] == "next"
+
