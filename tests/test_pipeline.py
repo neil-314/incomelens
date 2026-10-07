@@ -97,3 +97,16 @@ def test_months_cross_year_boundary_and_demo_never_uses_future_dates():
 
 
 def test_sync_additions_modifications_and_removals():
+    bodies = []
+
+    async def page(path, body):
+        bodies.append(body.copy())
+        if "cursor" not in body:
+            return {
+                "added": [raw(), raw(transaction_id="removed")],
+                "modified": [],
+                "removed": [],
+                "next_cursor": "next",
+                "has_more": True,
+            }
+        return {
