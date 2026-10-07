@@ -148,3 +148,16 @@ def test_sync_restarts_from_initial_cursor_after_mutation():
         }
 
     assert [
+        row["transaction_id"] for row in asyncio.run(ingest("test-token", page))
+    ] == ["one"]
+
+
+def test_sync_retries_are_bounded():
+    calls = []
+
+    async def page(path, body):
+        calls.append(body)
+        raise SandboxError("RETRY_SYNC")
+
+    with pytest.raises(SandboxError):
+        asyncio.run(ingest("test-token", page))
