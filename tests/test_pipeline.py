@@ -173,3 +173,11 @@ def test_empty_sync_distinguishes_loading_from_empty_history(status):
             "removed": [],
             "next_cursor": "done",
             "has_more": False,
+            "transactions_update_status": status,
+        }
+
+    if status == "NOT_READY":
+        with pytest.raises(SandboxError, match="NOT_READY"):
+            asyncio.run(ingest("test-token", page))
+    else:
+        assert asyncio.run(ingest("test-token", page)) == []
