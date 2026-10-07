@@ -135,3 +135,16 @@ def test_sync_restarts_from_initial_cursor_after_mutation():
                 "removed": [],
                 "next_cursor": "next",
                 "has_more": True,
+            }
+        if len(calls) == 2:
+            raise SandboxError("RETRY_SYNC")
+        assert "cursor" not in body
+        return {
+            "added": [raw()],
+            "modified": [],
+            "removed": [],
+            "next_cursor": "done",
+            "has_more": False,
+        }
+
+    assert [
