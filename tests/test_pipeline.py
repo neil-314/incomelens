@@ -122,3 +122,16 @@ def test_sync_additions_modifications_and_removals():
     assert records[0]["amount"] == -1500
     assert bodies[1]["cursor"] == "next"
 
+
+def test_sync_restarts_from_initial_cursor_after_mutation():
+    calls = []
+
+    async def page(path, body):
+        calls.append(body.copy())
+        if len(calls) == 1:
+            return {
+                "added": [raw(transaction_id="stale")],
+                "modified": [],
+                "removed": [],
+                "next_cursor": "next",
+                "has_more": True,
