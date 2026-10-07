@@ -84,3 +84,16 @@ def test_missing_and_zero_income_months():
 
 def test_cents_are_not_lost():
     rows = clean_transactions(
+        [raw(amount=-0.1), raw(transaction_id="two", amount=-0.2)]
+    )
+    assert analyze(rows, today=date(2026, 8, 10))["current"]["income"] == 0.3
+
+
+def test_months_cross_year_boundary_and_demo_never_uses_future_dates():
+    assert month_keys(date(2026, 1, 1))[0] == "2025-07"
+    assert all(
+        row["date"] <= "2026-01-01" for row in demo_transactions(date(2026, 1, 1))
+    )
+
+
+def test_sync_additions_modifications_and_removals():
