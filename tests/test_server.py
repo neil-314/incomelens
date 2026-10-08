@@ -67,3 +67,15 @@ def test_exchange_encrypted_cookie_sync_and_disconnect(client, monkeypatch):
     async def call(path, body):
         if path == "/item/public_token/exchange":
             return {"access_token": secret_token}
+        assert path == "/item/remove"
+        assert body["access_token"] == secret_token
+        return {}
+
+    async def ingest(access_token):
+        assert access_token == secret_token
+        return demo_transactions()
+
+    monkeypatch.setattr(plaid, "call", call)
+    monkeypatch.setattr(plaid, "ingest", ingest)
+    response = client.post(
+        "/api/plaid",
