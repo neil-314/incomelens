@@ -6,3 +6,15 @@ Plaid's external login window; it does not classify or analyze transactions.
 
 from html import escape
 from urllib.parse import urlencode
+
+
+def text(value):
+    return escape(str(value), quote=True)
+
+
+def money(amount, currency, decimals=0):
+    prefix = {"USD": "$", "CAD": "CA$", "EUR": "€", "GBP": "£"}.get(
+        currency, currency + " "
+    )
+    return f"{prefix}{amount:,.{decimals}f}"
+
