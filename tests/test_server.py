@@ -143,3 +143,7 @@ def test_connected_account_without_transactions(client, monkeypatch):
         return []
 
     monkeypatch.setattr(plaid, "ingest", ingest)
+    response = client.get("/?mode=sandbox")
+    assert "Connected successfully, but Plaid returned no transactions" in response.text
+    assert "No transactions available yet" in response.text
+    assert 'class="totals"' not in response.text
