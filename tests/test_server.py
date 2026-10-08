@@ -28,3 +28,16 @@ def test_pages_export_and_missing_configuration(client):
     assert isinstance(exported.json(), list)
     assert "attachment" in exported.headers["content-disposition"]
     response = client.post(
+        "/api/plaid", json={"action": "link"}, headers={"Origin": "http://testserver"}
+    )
+    assert response.status_code == 503
+    assert response.headers["cache-control"] == "no-store"
+
+
+def test_origin_and_body_validation(client):
+    assert client.post("/api/plaid", json={"action": "link"}).status_code == 403
+    assert (
+        client.post(
+            "/api/plaid",
+            json={"action": "link"},
+            headers={"Origin": "http://evil.example"},
