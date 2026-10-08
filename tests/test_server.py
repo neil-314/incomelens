@@ -16,3 +16,15 @@ def client(monkeypatch):
 
 def configured(monkeypatch):
     monkeypatch.setenv("PLAID_CLIENT_ID", "test-id")
+    monkeypatch.setenv("PLAID_SECRET", "test-secret")
+    monkeypatch.setenv("SESSION_SECRET", "test-encryption-key-with-32-characters")
+
+
+def test_pages_export_and_missing_configuration(client):
+    assert client.get("/").status_code == 200
+    assert client.get("/?view=pipeline").status_code == 200
+    exported = client.get("/export")
+    assert exported.status_code == 200
+    assert isinstance(exported.json(), list)
+    assert "attachment" in exported.headers["content-disposition"]
+    response = client.post(
