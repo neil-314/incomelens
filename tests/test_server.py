@@ -92,3 +92,16 @@ def test_exchange_encrypted_cookie_sync_and_disconnect(client, monkeypatch):
     ).json()["transactions"]
     assert client.post(
         "/api/plaid",
+        json={"action": "disconnect"},
+        headers={"Origin": "http://testserver"},
+    ).json() == {"connected": False}
+    assert not client.cookies.get(plaid.COOKIE)
+
+
+def test_tampered_connection_cookie(client, monkeypatch):
+    configured(monkeypatch)
+    client.cookies.set(plaid.COOKIE, "tampered")
+    response = client.post(
+        "/api/plaid", json={"action": "sync"}, headers={"Origin": "http://testserver"}
+    )
+    assert response.status_code == 401
