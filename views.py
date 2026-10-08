@@ -18,3 +18,16 @@ def money(amount, currency, decimals=0):
     )
     return f"{prefix}{amount:,.{decimals}f}"
 
+
+def chart(months, currency):
+    """Draw a small accessible SVG bar chart directly from monthly totals."""
+    maximum = max(1, *(max(month["income"], month["expenses"]) for month in months))
+    ceiling = max(1000, int(maximum / 1000 + 1) * 1000)
+    parts = [
+        '<svg viewBox="0 0 900 270" role="img" aria-label="Monthly income and expenses"><title>Monthly income and expenses</title>'
+    ]
+    for step in range(5):
+        value = ceiling * step / 4
+        y = 220 - step * 48
+        parts.append(
+            f'<line x1="55" x2="890" y1="{y}" y2="{y}" stroke="#e5e7eb"/><text x="45" y="{y + 4}" text-anchor="end" fill="#718096" font-size="11">{value / 1000:g}k</text>'
