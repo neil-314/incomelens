@@ -130,3 +130,16 @@ def test_raw_descriptions_are_html_escaped(client, monkeypatch):
 def test_sandbox_failure_never_silently_uses_sample_records(client):
     response = client.get("/?mode=sandbox")
     assert "Connection expired" in response.text
+    assert "0 records" in response.text
+    assert "Acme Studio" not in response.text
+    assert 'class="totals"' not in response.text
+
+
+def test_connected_account_without_transactions(client, monkeypatch):
+    configured(monkeypatch)
+    client.cookies.set(plaid.COOKIE, plaid.encrypt_token("test-token"))
+
+    async def ingest(access_token):
+        return []
+
+    monkeypatch.setattr(plaid, "ingest", ingest)
