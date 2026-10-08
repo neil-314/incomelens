@@ -105,3 +105,16 @@ def test_tampered_connection_cookie(client, monkeypatch):
         "/api/plaid", json={"action": "sync"}, headers={"Origin": "http://testserver"}
     )
     assert response.status_code == 401
+
+
+def test_raw_descriptions_are_html_escaped(client, monkeypatch):
+    monkeypatch.setattr(
+        web,
+        "demo_transactions",
+        lambda: [
+            {
+                "transaction_id": "x",
+                "date": "2026-08-01",
+                "name": '<script>alert("x")</script>',
+                "amount": -10,
+                "pending": False,
