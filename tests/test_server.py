@@ -54,3 +54,16 @@ def test_origin_and_body_validation(client):
         client.post(
             "/api/plaid",
             json={"action": "exchange", "public_token": ""},
+            headers={"Origin": "http://testserver"},
+        ).status_code
+        == 400
+    )
+
+
+def test_exchange_encrypted_cookie_sync_and_disconnect(client, monkeypatch):
+    configured(monkeypatch)
+    secret_token = "test-private-access-token"
+
+    async def call(path, body):
+        if path == "/item/public_token/exchange":
+            return {"access_token": secret_token}
