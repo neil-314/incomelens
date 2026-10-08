@@ -41,3 +41,16 @@ def test_origin_and_body_validation(client):
             "/api/plaid",
             json={"action": "link"},
             headers={"Origin": "http://evil.example"},
+        ).status_code
+        == 403
+    )
+    assert (
+        client.post(
+            "/api/plaid", content="broken", headers={"Origin": "http://testserver"}
+        ).status_code
+        == 400
+    )
+    assert (
+        client.post(
+            "/api/plaid",
+            json={"action": "exchange", "public_token": ""},
