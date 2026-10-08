@@ -79,3 +79,16 @@ def test_exchange_encrypted_cookie_sync_and_disconnect(client, monkeypatch):
     monkeypatch.setattr(plaid, "ingest", ingest)
     response = client.post(
         "/api/plaid",
+        json={"action": "exchange", "public_token": "test-public-token"},
+        headers={"Origin": "http://testserver"},
+    )
+    assert response.json() == {"connected": True}
+    cookie = response.headers["set-cookie"]
+    assert "HttpOnly" in cookie and "SameSite=strict" in cookie
+    assert secret_token not in cookie and secret_token not in response.text
+    assert "Plaid Sandbox" in client.get("/").text
+    assert client.post(
+        "/api/plaid", json={"action": "sync"}, headers={"Origin": "http://testserver"}
+    ).json()["transactions"]
+    assert client.post(
+        "/api/plaid",
