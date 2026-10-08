@@ -118,3 +118,15 @@ def test_raw_descriptions_are_html_escaped(client, monkeypatch):
                 "name": '<script>alert("x")</script>',
                 "amount": -10,
                 "pending": False,
+                "iso_currency_code": "USD",
+            }
+        ],
+    )
+    response = client.get("/?view=pipeline")
+    assert '<script>alert("x")</script>' not in response.text
+    assert "&lt;script&gt;" in response.text
+
+
+def test_sandbox_failure_never_silently_uses_sample_records(client):
+    response = client.get("/?mode=sandbox")
+    assert "Connection expired" in response.text
