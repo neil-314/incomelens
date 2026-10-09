@@ -31,3 +31,16 @@ def chart(months, currency):
         y = 220 - step * 48
         parts.append(
             f'<line x1="55" x2="890" y1="{y}" y2="{y}" stroke="#e5e7eb"/><text x="45" y="{y + 4}" text-anchor="end" fill="#718096" font-size="11">{value / 1000:g}k</text>'
+        )
+    for index, month in enumerate(months):
+        x = 88 + index * 118
+        for offset, key, color in [
+            (0, "income", "#315d9c"),
+            (30, "expenses", "#b8c0cc"),
+        ]:
+            height = max(0, month[key]) / ceiling * 192
+            parts.append(
+                f'<rect x="{x + offset}" y="{220 - height}" width="25" height="{height}" fill="{color}"><title>{text(month["month"])} {key}: {text(money(month[key], currency))}</title></rect>'
+            )
+        parts.append(
+            f'<text x="{x + 28}" y="245" text-anchor="middle" fill="#687483" font-size="12">{text(month["label"])}</text>'
