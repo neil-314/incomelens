@@ -57,3 +57,15 @@ def overview(report, currency):
         ("Income this month", money(current["income"], currency), "Month to date"),
         (
             "Monthly average",
+            money(report["average"], currency),
+            f"{report['complete_months']} completed months with records",
+        ),
+        (
+            "Net cash flow",
+            money(current["income"] - current["expenses"], currency),
+            "Income − expenses this month",
+        ),
+        (
+            "Income stability",
+            "—" if report["score"] is None else f"{report['score']}/100",
+            "Needs 3 completed months"
