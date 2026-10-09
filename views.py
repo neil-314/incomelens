@@ -82,3 +82,16 @@ def overview(report, currency):
         for source in report["sources"]
     )
     if not sources:
+        sources = '<tr><td colspan="4">No income found in this currency.</td></tr>'
+    return f"""<dl class="totals">{totals}</dl>
+    <section class="chart-section"><h3>Monthly income and expenses</h3><p class="muted">Six previous months and the current partial month.</p>{chart(report["months"], currency)}</section>
+    <section><h3>Income sources</h3><p class="muted">Grouped by cleaned description over the displayed period.</p><div class="table-scroll"><table><thead><tr><th>Source</th><th>Payments</th><th>Pattern</th><th class="number">Total</th></tr></thead><tbody>{sources}</tbody></table></div></section>"""
+
+
+SANDBOX_GUIDE = """<details class="sandbox-guide"><summary>How to connect a test bank</summary>
+<p>Plaid is the service that supplies bank transactions. Sandbox is its testing environment: all accounts and payments here are simulated.</p>
+<ol><li>Click <strong>Connect Sandbox</strong> at the top of the page.</li>
+<li>If asked for a phone number, skip that step if offered. Otherwise use <code>415-555-0136</code> and verification code <code>123456</code>. No text message will arrive.</li>
+<li>Search for <strong>First Platypus Bank</strong>. For a transaction-focused test account, use username <code>user_transactions_dynamic</code> and password <code>pass_good</code>. Select a checking account.</li>
+<li>Return here and press <strong>Refresh</strong> if history is still loading.</li></ol>
+<p>Test banks can return no transactions, no paychecks, or only a short history. A successful connection does not guarantee income data. Sample data includes regular paychecks so you can explore every view.</p>
