@@ -120,3 +120,16 @@ def introduction(view, mode, url):
 
 RULES = """<section class="rules"><h3>How the data is processed</h3><ol>
 <li><strong>Ingest:</strong> request records from Plaid Sandbox, or load the sample dataset.</li>
+<li><strong>Clean:</strong> remove duplicate IDs and invalid records; normalize source names.</li>
+<li><strong>Classify:</strong> posted credits count as income when the category or description supports it. Exclude transfers, refunds and pending payments; flag unknown credits.</li>
+<li><strong>Summarize:</strong> group income by month, source and currency.</li></ol>
+<p>Plaid uses negative amounts for incoming money. Below, each original description is paired with its cleaned result and the rule used.</p>
+<details><summary>Stability and recurring income rules</summary><p>Stability = max(0, 100 × (1 − standard deviation ÷ average income)). We use completed months with records and require at least three. Months with activity but no income count as zero; missing history is excluded. This is descriptive, not a prediction.</p><p>A source is recurring when it appears in at least three distinct months. Grouping uses text rules and can make mistakes.</p></details></section><h3>Raw → cleaned records</h3>"""
+
+
+def transaction_table(rows, view, mode, currency, query, kind):
+    explain = view == "pipeline"
+    filtered = [
+        row
+        for row in rows
+        if (kind == "all" or row["kind"] == kind)
