@@ -69,3 +69,16 @@ def overview(report, currency):
             "Income stability",
             "—" if report["score"] is None else f"{report['score']}/100",
             "Needs 3 completed months"
+            if report["score"] is None
+            else "Based on monthly income variation",
+        ),
+    ]
+    totals = "".join(
+        f"<div><dt>{text(label)}</dt><dd>{text(value)}</dd><small>{text(note)}</small></div>"
+        for label, value, note in metrics
+    )
+    sources = "".join(
+        f'<tr><td>{text(source["source"])}</td><td>{source["count"]}</td><td>{"Recurring · " + str(source["months"]) + " months" if source["recurring"] else "Occasional"}</td><td class="number">{text(money(source["total"], currency))}</td></tr>'
+        for source in report["sources"]
+    )
+    if not sources:
