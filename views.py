@@ -95,3 +95,15 @@ SANDBOX_GUIDE = """<details class="sandbox-guide"><summary>How to connect a test
 <li>Search for <strong>First Platypus Bank</strong>. For a transaction-focused test account, use username <code>user_transactions_dynamic</code> and password <code>pass_good</code>. Select a checking account.</li>
 <li>Return here and press <strong>Refresh</strong> if history is still loading.</li></ol>
 <p>Test banks can return no transactions, no paychecks, or only a short history. A successful connection does not guarantee income data. Sample data includes regular paychecks so you can explore every view.</p>
+<p>Use test details only. This version cannot connect your real bank. <a href="https://plaid.com/docs/sandbox/test-credentials/" target="_blank" rel="noopener noreferrer">Plaid test-account documentation ↗</a></p></details>"""
+
+
+def introduction(view, mode, url):
+    """Explain the purpose and give visitors a concrete path through the app."""
+    if view != "overview":
+        return SANDBOX_GUIDE
+    sample_url = text(url(mode="demo", view="overview") + "#analysis")
+    return f"""<section class="intro" aria-label="About IncomeLens">
+    <div><p class="eyebrow">A financial-data project · test data only</p>
+    <h2>Understand income beyond a bank balance.</h2>
+    <p>How much comes in each month? Where does it come from? How much does it vary? IncomeLens turns transaction records into monthly income, expenses and recurring income sources.</p>
