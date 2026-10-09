@@ -44,3 +44,16 @@ def chart(months, currency):
             )
         parts.append(
             f'<text x="{x + 28}" y="245" text-anchor="middle" fill="#687483" font-size="12">{text(month["label"])}</text>'
+        )
+    parts.append(
+        '</svg><p class="legend"><span style="color:#315d9c">■ Income</span> &nbsp; <span style="color:#788390">■ Expenses</span></p>'
+    )
+    return "".join(parts)
+
+
+def overview(report, currency):
+    current = report["current"]
+    metrics = [
+        ("Income this month", money(current["income"], currency), "Month to date"),
+        (
+            "Monthly average",
