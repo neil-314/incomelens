@@ -107,3 +107,16 @@ def introduction(view, mode, url):
     <div><p class="eyebrow">A financial-data project · test data only</p>
     <h2>Understand income beyond a bank balance.</h2>
     <p>How much comes in each month? Where does it come from? How much does it vary? IncomeLens turns transaction records into monthly income, expenses and recurring income sources.</p>
+    <p class="muted">Built to explore how an income-analysis tool could help someone with salary or freelance payments. This public version is a working prototype using simulated data.</p></div>
+    <aside class="start"><h3>Start with the sample</h3><p>Explore paychecks, freelance payments and expenses. No account or login needed.</p>
+    <a class="button primary" href="{sample_url}">{"Explore the sample below ↓" if mode == "demo" else "Load sample data →"}</a>
+    <p class="muted">Want to test the bank connection too? Use Connect Sandbox, then follow the guide below.</p></aside></section>
+    {SANDBOX_GUIDE}
+    <ol class="walkthrough" aria-label="What to do here">
+    <li><a href="{text(url(view="overview"))}#analysis">Review the income summary</a><p>Compare months and spot recurring payments. Stability describes variation; it is not a credit score.</p></li>
+    <li><a href="{text(url(view="transactions"))}#analysis">Check the transactions</a><p>Search payments and filter income, expenses or records that need review.</p></li>
+    <li><a href="{text(url(view="pipeline"))}#analysis">See how the rules work</a><p>Compare original bank descriptions with cleaned names and see why each payment was classified.</p></li></ol>"""
+
+
+RULES = """<section class="rules"><h3>How the data is processed</h3><ol>
+<li><strong>Ingest:</strong> request records from Plaid Sandbox, or load the sample dataset.</li>
