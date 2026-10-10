@@ -260,3 +260,8 @@ if (connect) connect.onclick = async () => {
 };
 const disconnect = document.getElementById('disconnect');
 if (disconnect) disconnect.onclick = async () => {
+  disconnect.disabled = true;
+  try { await request('disconnect'); window.location.href = '/'; }
+  catch (error) { showError(error); disconnect.disabled = false; }
+};
+"""
