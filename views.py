@@ -235,3 +235,15 @@ html{scroll-behavior:smooth;scroll-padding-top:20px}.intro{display:grid;grid-tem
 # The entire browser-side program: Plaid's SDK needs a JavaScript callback.
 PLAID_LOGIN = """
 const message = document.getElementById('message');
+function showError(error) { message.hidden = false; message.textContent = error.message; }
+async function request(action, values = {}) {
+  const response = await fetch('/api/plaid', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({action, ...values})});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error);
+  return data;
+}
+const connect = document.getElementById('connect');
+if (connect) connect.onclick = async () => {
+  connect.disabled = true;
+  try {
+    if (!window.Plaid) throw new Error('Plaid could not load. Please retry.');
