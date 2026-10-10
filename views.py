@@ -184,3 +184,15 @@ def render_page(
     )
     buttons = (
         f'<a class="button" href="{text(url(mode="sandbox"))}">Refresh</a><button id="disconnect">Disconnect</button>'
+        if connected
+        else '<button id="connect" class="primary">Connect Sandbox</button>'
+    )
+    note = (
+        "<strong>Plaid Sandbox</strong> · Simulated bank records. No real bank connected."
+        if mode == "sandbox"
+        else "<strong>Sample data</strong> · Generated locally. Connect Plaid Sandbox to use test-bank records."
+    )
+    if connected and mode == "sandbox":
+        note += f'<a href="{text(url(mode="demo"))}">Show sample data</a>'
+    elif connected:
+        note += f'<a href="{text(url(mode="sandbox"))}">Use connected test bank</a>'
