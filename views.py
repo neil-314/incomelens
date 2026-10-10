@@ -196,3 +196,16 @@ def render_page(
         note += f'<a href="{text(url(mode="demo"))}">Show sample data</a>'
     elif connected:
         note += f'<a href="{text(url(mode="sandbox"))}">Use connected test bank</a>'
+    options = "".join(
+        f"<option {'selected' if value == currency else ''}>{text(value)}</option>"
+        for value in currencies
+    )
+    currency_form = f'<form method="get"><input type="hidden" name="view" value="{view}"><input type="hidden" name="mode" value="{mode}"><label>Currency <select name="currency" aria-label="Currency">{options}</select></label><button>Update</button></form>'
+    content = (
+        overview(report, currency)
+        if view == "overview"
+        else (RULES if view == "pipeline" else "")
+        + transaction_table(rows, view, mode, currency, query, kind)
+    )
+    if mode == "sandbox" and not rows and view == "overview":
+        content = f'<section class="empty"><h3>No transactions available yet</h3><p>Your connection and your transaction history are separate steps. Until records arrive, there is nothing to calculate.</p><p>Try Refresh if Plaid is still preparing history. If this test account is empty, disconnect and try the account in the guide above.</p><a class="button" href="{text(url(mode="demo"))}#analysis">Explore sample data instead →</a></section>'
