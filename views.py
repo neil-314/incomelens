@@ -133,3 +133,16 @@ def transaction_table(rows, view, mode, currency, query, kind):
         row
         for row in rows
         if (kind == "all" or row["kind"] == kind)
+        and query.lower() in (row["name"] + " " + row["source"]).lower()
+    ]
+    options = "".join(
+        f'<option value="{value}" {"selected" if kind == value else ""}>{value}</option>'
+        for value in ["all", "income", "expense", "transfer", "review"]
+    )
+    hidden = "".join(
+        f'<input type="hidden" name="{key}" value="{text(value)}">'
+        for key, value in {"view": view, "mode": mode, "currency": currency}.items()
+    )
+    body = []
+    for row in filtered:
+        raw_or_source = (
