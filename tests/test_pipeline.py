@@ -162,3 +162,22 @@ def test_sync_retries_are_bounded():
     with pytest.raises(SandboxError):
         asyncio.run(ingest("test-token", page))
     assert len(calls) == 3
+
+
+@pytest.mark.parametrize("status", ["NOT_READY", "HISTORICAL_UPDATE_COMPLETE"])
+def test_empty_sync_distinguishes_loading_from_empty_history(status):
+    async def page(path, body):
+        return {
+            "added": [],
+            "modified": [],
+            "removed": [],
+            "next_cursor": "done",
+            "has_more": False,
+            "transactions_update_status": status,
+        }
+
+    if status == "NOT_READY":
+        with pytest.raises(SandboxError, match="NOT_READY"):
+            asyncio.run(ingest("test-token", page))
+    else:
+        assert asyncio.run(ingest("test-token", page)) == []

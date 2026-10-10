@@ -85,6 +85,11 @@ async def ingest(access_token, fetch_page=None):
                     rows.pop(removed["transaction_id"], None)
                 cursor = page["next_cursor"]
                 if not page["has_more"]:
+                    if not rows and page.get("transactions_update_status") not in {
+                        "INITIAL_UPDATE_COMPLETE",
+                        "HISTORICAL_UPDATE_COMPLETE",
+                    }:
+                        raise SandboxError("NOT_READY")
                     return list(rows.values())
             raise SandboxError("LIMIT")
         except SandboxError as error:
@@ -97,4 +102,5 @@ def error_message(error):
     return {
         "CONFIG": "Plaid Sandbox needs server environment variables. Sample data is ready.",
         "SESSION": "Connection expired. Connect your Sandbox again.",
+        "NOT_READY": "Connected successfully. Plaid has not finished preparing transaction history. Try Refresh shortly; these are not zero-income results.",
     }.get(str(error), "Sandbox request failed. Please retry shortly.")

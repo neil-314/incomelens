@@ -47,7 +47,8 @@ async def page_records(request):
             records = await plaid.ingest(access_token)
             if not records:
                 message = (
-                    "Plaid is preparing the transactions. Try Refresh in a moment."
+                    "Connected successfully, but Plaid returned no transactions for this test account. "
+                    "You can show sample data, or disconnect and try another Sandbox checking account."
                 )
         except plaid.SandboxError as error:
             message = plaid.error_message(error)

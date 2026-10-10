@@ -132,3 +132,18 @@ def test_sandbox_failure_never_silently_uses_sample_records(client):
     assert "Connection expired" in response.text
     assert "0 records" in response.text
     assert "Acme Studio" not in response.text
+    assert 'class="totals"' not in response.text
+
+
+def test_connected_account_without_transactions(client, monkeypatch):
+    configured(monkeypatch)
+    client.cookies.set(plaid.COOKIE, plaid.encrypt_token("test-token"))
+
+    async def ingest(access_token):
+        return []
+
+    monkeypatch.setattr(plaid, "ingest", ingest)
+    response = client.get("/?mode=sandbox")
+    assert "Connected successfully, but Plaid returned no transactions" in response.text
+    assert "No transactions available yet" in response.text
+    assert 'class="totals"' not in response.text

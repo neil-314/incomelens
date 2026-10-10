@@ -175,6 +175,8 @@ def render_page(
         else (RULES if view == "pipeline" else "")
         + transaction_table(rows, view, mode, currency, query, kind)
     )
+    if mode == "sandbox" and not rows and view == "overview":
+        content = '<section class="empty"><h3>No transactions available yet</h3><p>Income, cash flow and stability will appear here once transaction records are available.</p></section>'
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IncomeLens</title><style>{STYLE}</style></head><body><main class="container">
     <header><div><h1>IncomeLens</h1><p>Income and cash flow from bank transactions.</p></div><div class="actions">{buttons}</div></header>
     <div class="data-note">{note}</div><p id="message" role="status" class="message" {"" if message else "hidden"}>{text(message)}</p>
