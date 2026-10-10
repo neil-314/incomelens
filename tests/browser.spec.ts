@@ -6,17 +6,17 @@ test("demo dashboard, pipeline filters, export and missing configuration", async
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:3000");
   await expect(
-    page.getByRole("heading", { name: "A clearer picture of your income." }),
+    page.getByRole("heading", { name: "IncomeLens", exact: true }),
   ).toBeVisible();
   await page.screenshot({ path: "docs/dashboard.png", fullPage: true });
   const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export", exact: true }).click();
+  await page.getByRole("button", { name: "Export JSON", exact: true }).click();
   expect((await download).suggestedFilename()).toBe("incomelens-cleaned.json");
   await page
     .getByRole("button", { name: "Data pipeline", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "An explainable pipeline" }),
+    page.getByRole("heading", { name: "How the data is processed" }),
   ).toBeVisible();
   await page.getByLabel("Classification").selectOption("review");
   await expect(page.locator("tbody tr")).not.toHaveCount(0);

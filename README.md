@@ -1,86 +1,84 @@
 # IncomeLens
 
-An explainable financial-data pipeline with a Next.js dashboard. Explore a realistic demo immediately, then connect simulated bank data through Plaid Sandbox.
+A small app that turns bank transactions into monthly income and cash-flow summaries.
 
-![IncomeLens dashboard](docs/dashboard.png)
+**Live app:** https://incomelens-olive.vercel.app
 
-## Run it locally
+![Dashboard](docs/dashboard.png)
 
-Install Node.js 22 or newer, then open a terminal in this folder:
+## Run locally
+
+Use Node.js 22 or newer:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:3000. No accounts or secrets are required for demo mode.
+Open http://127.0.0.1:3000. Sample data works without any accounts or keys.
 
-## What it does
+## Where the code lives
 
-- Monthly income and expense chart, month-to-date income and net cash flow.
-- Completed-month average and a transparent income-stability score.
-- Grouped income sources and recurring-pattern detection.
-- Searchable transaction explorer and raw-to-cleaned explanations.
-- JSON export; separate currency totals without pretending to convert currencies.
-- Plaid Link, server-side token exchange, transaction synchronization and disconnect.
-- Responsive desktop and mobile layouts.
+| File                               | Job                                                            |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `app/page.tsx`                     | Page navigation, data state and connection buttons             |
+| `components/income-chart.tsx`      | Monthly bar chart                                              |
+| `components/transaction-table.tsx` | Search, filters and transaction rows                           |
+| `lib/pipeline.ts`                  | Clean descriptions, classify transactions and calculate totals |
+| `lib/plaid.ts`                     | Server-side Plaid requests and encrypted connection cookie     |
+| `app/api/plaid/route.ts`           | Link, exchange, sync and disconnect actions                    |
+| `app/globals.css`                  | Layout and styling                                             |
 
-## How to explain it to a friend
+There is no database or AI model. The income rules are ordinary TypeScript functions. The chart and both transaction views use the same cleaned records.
 
-The UI is `app/page.tsx`. It takes transactions and renders charts with Recharts. `lib/pipeline.ts` is pure TypeScript: it removes duplicates, checks basic validity, classifies records using explicit rules, and computes summaries. `lib/plaid.ts` calls Plaid on the server. `app/api/plaid/route.ts` exposes the small set of actions the UI needs.
+## How Plaid Sandbox connects
 
-A Plaid credit has a **negative** amount. Income requires a posted credit plus an income category or recognizable income description. Transfers, refunds and pending transactions do not count as earned income. Unknown credits remain in a review queue. Confidence percentages are fixed rule-strength labels, not machine-learning probabilities. This is a rule-based application, not an AI classifier.
+1. Click **Connect Sandbox**. Our server requests a short-lived Link token from Plaid.
+2. Plaid opens its login window. Choose a test bank and enter fake credentials.
+3. Plaid returns a public token. Our server exchanges it for a private access token.
+4. The server uses that access token to request simulated transactions.
+5. Our cleaning rules process those records and the page updates.
 
-The chart covers six previous months and the current partial month. Stability uses only observed completed months within that window and needs at least three. It is `max(0, 100 * (1 - standard deviation / mean))`. An observed expense-only month has zero income; a month with no records is treated as missing history. This can overestimate stability if a source supplies incomplete coverage. Recurring means the same cleaned source appears in three distinct months; it does not predict payday. Source-name normalization can merge unrelated descriptions or split one employer across names.
+The access token stays in an encrypted HttpOnly cookie. Credentials stay in server environment variables. Nothing here connects to real banks: the server URL is fixed to Plaid Sandbox.
 
-Net cash flow here means **classified income minus expenses**, not every bank credit minus every debit. Transfers and unrecognized credits are excluded. The current month is partial, so month-over-month percentage changes are deliberately omitted.
+To enable this flow, create a Plaid developer account at https://dashboard.plaid.com/signup. Copy `.env.example` to `.env.local` and fill in `PLAID_CLIENT_ID`, the Sandbox `PLAID_SECRET`, and a random `SESSION_SECRET` of at least 32 characters. Never commit that file or paste secrets into chat. Restart the server after changing environment variables.
 
-## Add Plaid Sandbox later
+In Vercel, add the same variables under **IncomeLens → Settings → Environment Variables**, then redeploy. For a non-OAuth test bank such as First Platypus Bank, the sample login is `user_good` / `pass_good`. If transactions are still being prepared, press **Refresh** after a short wait.
 
-1. Create a developer account at https://dashboard.plaid.com/signup and open its Keys page.
-2. Copy `.env.example` to `.env.local` locally. Fill in `PLAID_CLIENT_ID` and the **Sandbox** `PLAID_SECRET` there, never in chat or GitHub.
-3. Set `SESSION_SECRET` to a random string of at least 32 characters. For example, generate locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and copy it directly into the environment file. Do not share the output.
-4. Restart the development server. Click **Connect Sandbox**. Choose a non-OAuth test bank such as First Platypus Bank and use Plaid’s sample credentials `user_good` / `pass_good`.
-5. If the initial transaction response is empty, wait briefly and press **Refresh**. Plaid initializes transaction data asynchronously.
+## Calculation rules
 
-This app hardcodes `https://sandbox.plaid.com`; it cannot connect to production banks. Sandbox credentials are required for a real integration check. The demo is clearly labeled and does not silently substitute sample data after connection.
+- Plaid uses negative amounts for incoming money. A posted credit counts as income if its category or description supports it.
+- Transfers, refunds and pending records are excluded. Unknown credits are flagged for review.
+- Net cash flow means classified income minus expenses. It excludes transfers and unknown credits.
+- Totals are separate by currency. There is no exchange-rate conversion.
+- Stability is `max(0, 100 × (1 − standard deviation / average))`, using completed months with records. It needs at least three months. Months with activity but no income count as zero; absent history is skipped.
+- A source is marked recurring if it appears in three distinct months. This does not predict payday.
 
-## Security and storage choices
+Description matching can make mistakes. The current month is partial. The stability score describes observed variation; it does not assess creditworthiness or predict future income. Exported confidence values are fixed rule labels, not statistical probabilities.
 
-Secrets are server-only environment variables and ignored by Git. Access tokens are stored in an encrypted, HttpOnly, SameSite=Strict cookie with a two-hour expiry and Secure in production. They are never returned in a JSON response or stored in browser localStorage. POST requests validate their Origin. Errors are sanitized; tokens and credentials are not logged.
+## Storage
 
-This intentionally small Sandbox app has no user accounts or persistent database. A sync rebuilds transactions from the initial cursor, applies additions/modifications/removals, and restarts on pagination mutation. Pages and retries are bounded. Browser transaction state clears on reload; the encrypted connection can be resumed by connecting again or invoking refresh in a retained page. Disconnect removes the Plaid Item and clears the cookie. Reset demo only changes the display; it does not revoke a connection.
+Transactions live in page memory. Refreshing the page returns to sample data. The connection cookie expires after two hours. While the connection is open, **Refresh** fetches transactions again and **Disconnect** removes the Plaid Item and clears the cookie. **Show sample data** changes the display without disconnecting.
 
-Before adapting this to real financial data, add authentication, encrypted database storage, per-user rate limits, signed webhook verification, durable cursors, account selection, consent/deletion flows, and operational monitoring. Do not enable real banking by merely changing the endpoint.
+Each sync starts from the initial cursor, applies added/modified/removed records, and retries if Plaid changes pages during pagination. This keeps the example small. A larger app would store a per-user cursor and transaction history in a database.
 
-## Verify
+## Checks
 
 ```sh
 npm test
 npm run typecheck
 npm run build
-# Start npm run dev in another terminal first:
+# With npm run dev running in another terminal:
 npx playwright install chromium
 npx playwright test tests/browser.spec.ts --workers=1
 ```
 
-Unit tests cover amount signs, pending items, transfers/refunds, unknown credits, duplicate IDs, invalid values, currency isolation, future dates, incomplete history, and stability. Browser tests cover navigation, filters, search, export, missing configuration and mobile overflow. GitHub Actions runs unit tests and the production build.
+Tests cover income signs, pending payments, transfers/refunds, duplicates, invalid values, currencies, future dates and incomplete history. Browser checks cover navigation, search, filters, export, missing configuration and mobile layout. GitHub Actions runs unit tests and the production build.
 
-## Deploy on Vercel
+## Deployment
 
-1. Sign up at https://vercel.com/signup using the GitHub account containing this repository.
-2. Click **Add New → Project**, import `incomelens`, keep the detected Next.js defaults, and click **Deploy**. Demo mode needs no environment variables.
-3. To enable Sandbox, open the project’s **Settings → Environment Variables** and add the three variables from `.env.example`. Redeploy after adding them. Never prefix them with `NEXT_PUBLIC_`.
-4. Future GitHub pushes are deployed automatically after the project is linked.
+The private GitHub repository is connected to the Vercel `incomelens` project. Pushes to `main` trigger a production deployment. No environment variables are needed for sample mode. Live Sandbox ingestion still needs Plaid developer credentials and has not been verified against a configured Plaid account.
 
-An anonymous temporary Vercel preview, if provided, is not a permanent production URL. Claim it through Vercel or import this repository for a durable deployment.
+This is a Sandbox learning project. Real banking would need user accounts, durable encrypted storage, rate limits, signed webhooks, consent/deletion handling and monitoring.
 
-## Stack
-
-Next.js App Router · TypeScript · Tailwind CSS 4 · Recharts · react-plaid-link · jose · Node test runner · Playwright.
-
-References: https://plaid.com/docs/quickstart/ · https://plaid.com/docs/api/transactions/#transactionssync · https://nextjs.org/docs/app · https://vercel.com/docs/frameworks/full-stack/nextjs
-
-## Verification limits
-
-Live Plaid Sandbox exchange and ingestion require the developer credentials described above. Tests and demo data do not establish a working live bank integration. There are no webhooks, database or production bank connections in this version.
+Docs: https://plaid.com/docs/quickstart/ · https://plaid.com/docs/api/transactions/#transactionssync
