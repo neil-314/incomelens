@@ -69,7 +69,7 @@ The encrypted connection cookie lasts two hours, is HttpOnly and SameSite=Strict
 
 Reloading preserves a valid connection. **Show sample data** changes the display without disconnecting. **Disconnect** revokes the Plaid Item and clears the cookie after Plaid confirms success. If the session has expired, reconnect. The Python cookie format differs from the old Next.js app, so existing connections need to be re-established after migration.
 
-No real banks are supported: the Plaid endpoint is fixed to Sandbox. Live Sandbox ingestion still needs developer credentials and has not been verified against a configured Plaid account. Mocked tests verify the connection, cookie and ingestion logic without real credentials.
+No real banks are supported: the Plaid endpoint is fixed to Sandbox. The production app is configured with Plaid Sandbox credentials stored as sensitive Vercel environment variables. Live verification passed for Link token creation, public-token exchange, the encrypted connection cookie, transaction ingestion, dashboard rendering, export and disconnect. The default test bank returned 114 records; a controlled payroll fixture returned six classified income payments. Temporary test Items were removed afterward. Automated tests use mocks and do not require those secrets.
 
 ## Tests
 
