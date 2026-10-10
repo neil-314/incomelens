@@ -88,6 +88,36 @@ def overview(report, currency):
     <section><h3>Income sources</h3><p class="muted">Grouped by cleaned description over the displayed period.</p><div class="table-scroll"><table><thead><tr><th>Source</th><th>Payments</th><th>Pattern</th><th class="number">Total</th></tr></thead><tbody>{sources}</tbody></table></div></section>"""
 
 
+SANDBOX_GUIDE = """<details class="sandbox-guide"><summary>How to connect a test bank</summary>
+<p>Plaid is the service that supplies bank transactions. Sandbox is its testing environment: all accounts and payments here are simulated.</p>
+<ol><li>Click <strong>Connect Sandbox</strong> at the top of the page.</li>
+<li>If asked for a phone number, skip that step if offered. Otherwise use <code>415-555-0136</code> and verification code <code>123456</code>. No text message will arrive.</li>
+<li>Search for <strong>First Platypus Bank</strong>. For a transaction-focused test account, use username <code>user_transactions_dynamic</code> and password <code>pass_good</code>. Select a checking account.</li>
+<li>Return here and press <strong>Refresh</strong> if history is still loading.</li></ol>
+<p>Test banks can return no transactions, no paychecks, or only a short history. A successful connection does not guarantee income data. Sample data includes regular paychecks so you can explore every view.</p>
+<p>Use test details only. This version cannot connect your real bank. <a href="https://plaid.com/docs/sandbox/test-credentials/" target="_blank" rel="noopener noreferrer">Plaid test-account documentation ↗</a></p></details>"""
+
+
+def introduction(view, mode, url):
+    """Explain the purpose and give visitors a concrete path through the app."""
+    if view != "overview":
+        return SANDBOX_GUIDE
+    sample_url = text(url(mode="demo", view="overview") + "#analysis")
+    return f"""<section class="intro" aria-label="About IncomeLens">
+    <div><p class="eyebrow">A financial-data project · test data only</p>
+    <h2>Understand income beyond a bank balance.</h2>
+    <p>How much comes in each month? Where does it come from? How much does it vary? IncomeLens turns transaction records into monthly income, expenses and recurring income sources.</p>
+    <p class="muted">Built to explore how an income-analysis tool could help someone with salary or freelance payments. This public version is a working prototype using simulated data.</p></div>
+    <aside class="start"><h3>Start with the sample</h3><p>Explore paychecks, freelance payments and expenses. No account or login needed.</p>
+    <a class="button primary" href="{sample_url}">{"Explore the sample below ↓" if mode == "demo" else "Load sample data →"}</a>
+    <p class="muted">Want to test the bank connection too? Use Connect Sandbox, then follow the guide below.</p></aside></section>
+    {SANDBOX_GUIDE}
+    <ol class="walkthrough" aria-label="What to do here">
+    <li><a href="{text(url(view="overview"))}#analysis">Review the income summary</a><p>Compare months and spot recurring payments. Stability describes variation; it is not a credit score.</p></li>
+    <li><a href="{text(url(view="transactions"))}#analysis">Check the transactions</a><p>Search payments and filter income, expenses or records that need review.</p></li>
+    <li><a href="{text(url(view="pipeline"))}#analysis">See how the rules work</a><p>Compare original bank descriptions with cleaned names and see why each payment was classified.</p></li></ol>"""
+
+
 RULES = """<section class="rules"><h3>How the data is processed</h3><ol>
 <li><strong>Ingest:</strong> request records from Plaid Sandbox, or load the sample dataset.</li>
 <li><strong>Clean:</strong> remove duplicate IDs and invalid records; normalize source names.</li>
@@ -164,6 +194,8 @@ def render_page(
     )
     if connected and mode == "sandbox":
         note += f'<a href="{text(url(mode="demo"))}">Show sample data</a>'
+    elif connected:
+        note += f'<a href="{text(url(mode="sandbox"))}">Use connected test bank</a>'
     options = "".join(
         f"<option {'selected' if value == currency else ''}>{text(value)}</option>"
         for value in currencies
@@ -176,19 +208,28 @@ def render_page(
         + transaction_table(rows, view, mode, currency, query, kind)
     )
     if mode == "sandbox" and not rows and view == "overview":
-        content = '<section class="empty"><h3>No transactions available yet</h3><p>Income, cash flow and stability will appear here once transaction records are available.</p></section>'
+        content = f'<section class="empty"><h3>No transactions available yet</h3><p>Your connection and your transaction history are separate steps. Until records arrive, there is nothing to calculate.</p><p>Try Refresh if Plaid is still preparing history. If this test account is empty, disconnect and try the account in the guide above.</p><a class="button" href="{text(url(mode="demo"))}#analysis">Explore sample data instead →</a></section>'
+    descriptions = {
+        "overview": "Income, spending and payment patterns in the selected dataset. The current month is still in progress.",
+        "transactions": "Check what was counted. Transfers are excluded; unfamiliar credits and pending payments are marked for review.",
+        "pipeline": "Follow a bank record from its original description to its cleaned name and classification. Every result has a rule you can inspect.",
+    }
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IncomeLens</title><style>{STYLE}</style></head><body><main class="container">
-    <header><div><h1>IncomeLens</h1><p>Income and cash flow from bank transactions.</p></div><div class="actions">{buttons}</div></header>
+    <header><div><h1>IncomeLens</h1><p>Make sense of the money coming in.</p></div><div class="actions">{buttons}</div></header>
+    {introduction(view, mode, url)}
     <div class="data-note">{note}</div><p id="message" role="status" class="message" {"" if message else "hidden"}>{text(message)}</p>
-    <nav aria-label="Views">{nav}</nav><div class="section-heading"><h2>{labels[view]}</h2><div class="actions">{currency_form}<a class="button" href="/export?mode={mode}">Export JSON</a></div></div>
-    {content}<footer><span>Sandbox project · {len(rows)} records · {report["review"]} flagged for review</span><span>Python · totals are separate by currency.</span></footer></main>
+    <nav id="analysis" aria-label="Views">{nav}</nav><div class="section-heading"><h2>{labels[view]}</h2><div class="actions">{currency_form}<a class="button" href="/export?mode={mode}">Export JSON</a></div></div><p class="view-description">{descriptions[view]}</p>
+    {content}<footer><span>Sandbox project · {len(rows)} records · {report["review"]} flagged for review</span><span>Rule-based estimates · currencies are kept separate.</span></footer></main>
     <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script><script>{PLAID_LOGIN}</script></body></html>"""
 
 
 # Browser display rules, kept here so there is no separate frontend project.
 STYLE = """
+html{scroll-behavior:smooth;scroll-padding-top:20px}.intro{display:grid;grid-template-columns:1.5fr 1fr;gap:55px;padding:26px 0 30px;border-top:1px solid #e1e5eb;margin-bottom:0}.intro h2{font-size:32px;line-height:1.18;letter-spacing:-.7px;max-width:470px;margin:8px 0 18px}.intro p{line-height:1.7;max-width:540px}.eyebrow{text-transform:uppercase;letter-spacing:1.3px;font-size:10px;color:#6d7580}.start{border-left:1px solid #dce1e7;padding:15px 0 5px 30px}.start h3{font-size:17px}.start .primary{color:#fff;background:#315d9c;border-color:#315d9c}.start .primary:hover{background:#264f89}.sandbox-guide{border-top:1px solid #e1e5eb;border-bottom:1px solid #e1e5eb;padding:15px 0;margin:0 0 24px;font-size:13px;line-height:1.8}.sandbox-guide summary{font-weight:bold}.sandbox-guide ol{padding-left:22px;max-width:790px}.sandbox-guide li{padding:4px 0}.sandbox-guide p{max-width:790px;color:#626c7a}.sandbox-guide code{background:#f1f3f6;padding:3px 5px;color:#303844}.walkthrough{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding:0 0 0 19px;margin:0 0 30px}.walkthrough li{padding-left:4px;font-size:12px;color:#647080}.walkthrough a{font-size:13px;text-decoration:none;font-weight:bold}.walkthrough p{line-height:1.6;margin:8px 0}.view-description{color:#647080;font-size:13px;line-height:1.7;margin:-10px 0 25px;max-width:760px}.empty{line-height:1.7}.empty h3{color:#303844}
 *{box-sizing:border-box}body{margin:0;background:#fff;color:#20252d;font:14px Arial,Helvetica,sans-serif}.container{max-width:1120px;margin:auto;padding:38px 30px}header,.actions,.section-heading,.data-note,footer{display:flex;align-items:center;justify-content:space-between;gap:12px}header{margin-bottom:25px}h1{font-size:25px;margin:0 0 8px}h2{font-size:19px;margin:0}h3{font-size:15px;margin:0 0 9px}header p,.muted{color:#6d7580;font-size:13px}header p{margin:0}button,.button,input,select{font:inherit;border:1px solid #cfd4dc;border-radius:4px;padding:8px 12px;background:white;color:#303844}button,.button,select{cursor:pointer}.button{text-decoration:none;display:inline-block}button:hover,.button:hover{background:#f4f6f8}.primary{color:white;background:#315d9c;border-color:#315d9c}button:disabled{opacity:.5;cursor:wait}a{color:#315d9c}a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #315d9c;outline-offset:3px}.data-note{background:#f5f7fa;border:1px solid #e0e4e9;padding:13px;font-size:12px;color:#626c7a;border-radius:4px;justify-content:flex-start;flex-wrap:wrap}.message{padding:13px;background:#fff9e9;border:1px solid #e8dbb5;font-size:13px}nav{display:flex;gap:25px;border-bottom:1px solid #dce1e7;margin:25px 0}nav a{text-decoration:none;padding:12px 0;border-bottom:2px solid transparent;color:#727b87;font-size:13px}nav a[aria-current]{color:#264f89;border-color:#315d9c;font-weight:bold}.section-heading{margin-bottom:24px}.section-heading .actions{font-size:12px}.section-heading form{display:flex;gap:8px;align-items:center}.totals{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;padding-bottom:25px;border-bottom:1px solid #e1e5eb;margin:0 0 28px}.totals dt{color:#647080;font-size:12px;margin-bottom:12px}.totals dd{font-size:28px;margin:0 0 7px;font-variant-numeric:tabular-nums}.totals small{font-size:11px;color:#848c97;line-height:1.6}section{margin-bottom:32px}.chart-section{border-bottom:1px solid #e1e5eb;padding-bottom:20px}svg{width:100%;display:block;min-height:190px}.legend{text-align:center;font-size:12px}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{font-weight:normal;font-size:11px;color:#748092;background:#f8f9fb;border-bottom:1px solid #d5dce5;padding:12px 10px}td{padding:13px 10px;border-bottom:1px solid #eceff3;vertical-align:top}.number{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}.date{white-space:nowrap;color:#77808c;font-size:12px}.type{font-size:11px;color:#76808e}.income{color:#326d4c}.review{color:#927123}.filters{display:flex;gap:10px;align-items:center;margin:20px 0}.filters input:not([type=hidden]){width:230px}.filters .muted{margin-left:auto}.rules{font-size:13px;line-height:1.8;border-bottom:1px solid #e1e5eb;padding-bottom:24px}.rules li{margin-bottom:8px}.rules p{color:#687483}summary{cursor:pointer;color:#315d9c}.rule{min-width:230px;max-width:300px;font-size:12px;color:#687483;line-height:1.6}code{font-size:11px;overflow-wrap:anywhere}small{display:block;font-size:10px;color:#818a98;margin-top:4px}footer{border-top:1px solid #e1e5eb;margin-top:35px;padding-top:18px;font-size:11px;color:#88919d}.empty{padding:24px 0;color:#818a96}
 @media(max-width:700px){.container{padding:24px 18px}header,.section-heading{align-items:flex-start;flex-direction:column}.totals{grid-template-columns:repeat(2,1fr);gap:25px 16px}.totals dd{font-size:26px}.actions{flex-wrap:wrap;justify-content:flex-start}.filters{flex-wrap:wrap}.filters input:not([type=hidden]){width:180px}.filters .muted{margin-left:0}table{min-width:540px}footer{align-items:flex-start;flex-direction:column}}
+@media(max-width:700px){.intro{grid-template-columns:1fr;gap:18px;padding-top:15px}.intro h2{font-size:28px}.start{border-left:0;border-top:1px solid #e1e5eb;padding:20px 0 5px}.walkthrough{grid-template-columns:1fr;gap:14px}.walkthrough p{margin:4px 0}.sandbox-guide{margin-bottom:22px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 """
 
 # The entire browser-side program: Plaid's SDK needs a JavaScript callback.
