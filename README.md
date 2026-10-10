@@ -1,6 +1,6 @@
-# IncomeLens — Python
+# IncomeLens
 
-Income and cash flow from bank transactions, written in Python 3.12 with FastAPI.
+Understand monthly income, recurring payment sources and cash flow, with rules you can inspect. Built in Python 3.12 with FastAPI and Plaid Sandbox.
 
 **Live app:** https://incomelens-olive.vercel.app
 
@@ -10,7 +10,7 @@ IncomeLens explores how bank transactions can answer three questions: how much i
 
 Start with the sample dataset; no login is required. Review the Overview, search and filter Transactions, then open Data pipeline to compare original descriptions with cleaned names and classification rules. The page includes a separate Plaid Sandbox guide for testing the bank connection. Test banks may have no transactions or income, so sample data is the easiest way to explore all features. Stability describes past income variation; it is not a credit score or forecast.
 
-![Dashboard](docs/dashboard.png)
+![IncomeLens introduction and guide](docs/introduction.jpg)
 
 ## Run it
 
@@ -54,7 +54,9 @@ Create a developer account at https://dashboard.plaid.com/signup. Copy `.env.exa
 
 On Vercel, add those same three variables under **IncomeLens → Settings → Environment Variables** and redeploy. Never put them in GitHub, chat, screenshots or logs.
 
-Use a non-OAuth test bank such as First Platypus Bank and sample credentials `user_good` / `pass_good`. If data is still being prepared, press **Refresh** shortly afterward.
+For a transaction-focused test account, search for **First Platypus Bank**, use username `user_transactions_dynamic` and password `pass_good`, then select a checking account. If Plaid asks for a phone number, skip the step if offered, or use the Sandbox profile `415-555-0136` with verification code `123456`. No text message will arrive. These are public test details, not real account credentials. See [Plaid's test credentials](https://plaid.com/docs/sandbox/test-credentials/) and [Sandbox phone profiles](https://plaid.com/docs/link/returning-user/#testing-in-sandbox).
+
+If transaction history is still loading, press **Refresh** shortly afterward. A connected test account may have no transactions or paychecks; the app explains this instead of showing empty history as zero income. Choose sample data to explore regular payroll and freelance income without a bank connection.
 
 ## Rules and limits
 
