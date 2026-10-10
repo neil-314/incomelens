@@ -247,3 +247,16 @@ if (connect) connect.onclick = async () => {
   connect.disabled = true;
   try {
     if (!window.Plaid) throw new Error('Plaid could not load. Please retry.');
+    const data = await request('link');
+    const handler = Plaid.create({token:data.link_token,
+      onSuccess: async (public_token) => {
+        try { await request('exchange', {public_token}); window.location.href = '/?mode=sandbox'; }
+        catch (error) { showError(error); connect.disabled = false; }
+      },
+      onExit: (error) => { handler.destroy(); connect.disabled = false; if (error) showError(new Error('Plaid connection closed. Please retry.')); }
+    });
+    handler.open();
+  } catch (error) { showError(error); connect.disabled = false; }
+};
+const disconnect = document.getElementById('disconnect');
+if (disconnect) disconnect.onclick = async () => {
