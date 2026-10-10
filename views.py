@@ -146,3 +146,15 @@ def transaction_table(rows, view, mode, currency, query, kind):
     body = []
     for row in filtered:
         raw_or_source = (
+            f"<code>{text(row['name'])}</code>" if explain else text(row["source"])
+        )
+        extra_source = f"<td>{text(row['source'])}</td>" if explain else ""
+        extra_rule = f'<td class="rule">{text(row["reason"])}</td>' if explain else ""
+        amount = money(
+            abs(row["amount"]), row.get("iso_currency_code") or "Unknown currency"
+        )
+        pending = "<small>Pending</small>" if row.get("pending") else ""
+        body.append(
+            f'<tr><td class="date">{text(row["date"])}{pending}</td><td>{raw_or_source}</td>{extra_source}<td><span class="type {row["kind"]}">{row["kind"]}</span></td><td class="number">{"+" if row["amount"] < 0 else "−"}{text(amount)}</td>{extra_rule}</tr>'
+        )
+    table = (
