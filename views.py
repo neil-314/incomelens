@@ -158,3 +158,16 @@ def transaction_table(rows, view, mode, currency, query, kind):
             f'<tr><td class="date">{text(row["date"])}{pending}</td><td>{raw_or_source}</td>{extra_source}<td><span class="type {row["kind"]}">{row["kind"]}</span></td><td class="number">{"+" if row["amount"] < 0 else "−"}{text(amount)}</td>{extra_rule}</tr>'
         )
     table = (
+        f'<div class="table-scroll"><table><thead><tr><th>Date</th><th>{"Original description" if explain else "Description"}</th>{"<th>Cleaned source</th>" if explain else ""}<th>Type</th><th class="number">Amount</th>{"<th>Rule</th>" if explain else ""}</tr></thead><tbody>{"".join(body)}</tbody></table></div>'
+        if body
+        else '<p class="empty">No matching transactions.</p>'
+    )
+    return f'''<form class="filters" method="get">{hidden}<input aria-label="Search transactions" name="q" placeholder="Search transactions" value="{text(query)}"><select aria-label="Classification" name="kind">{options}</select><button>Apply</button><span class="muted">{len(filtered)} records</span></form>{table}'''
+
+
+def render_page(
+    rows, report, currencies, currency, view, mode, connected, message, query, kind
+):
+    def url(**changes):
+        return "/?" + urlencode(
+            {"view": view, "mode": mode, "currency": currency, **changes}
