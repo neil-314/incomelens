@@ -171,3 +171,16 @@ def render_page(
     def url(**changes):
         return "/?" + urlencode(
             {"view": view, "mode": mode, "currency": currency, **changes}
+        )
+
+    labels = {
+        "overview": "Overview",
+        "transactions": "Transactions",
+        "pipeline": "Data pipeline",
+    }
+    nav = "".join(
+        f'<a href="{text(url(view=key))}" {"aria-current=page" if view == key else ""}>{label}</a>'
+        for key, label in labels.items()
+    )
+    buttons = (
+        f'<a class="button" href="{text(url(mode="sandbox"))}">Refresh</a><button id="disconnect">Disconnect</button>'
