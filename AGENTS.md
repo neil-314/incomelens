@@ -1,9 +1,11 @@
-<!-- BEGIN:nextjs-agent-rules -->
+# IncomeLens development
 
-## This is NOT the Next.js you know
+Python 3.12 app. Business rules: pipeline.py. Plaid: plaid.py.
+Routes: app.py. Presentation: views.py. Use normal functions and dictionaries.
+Run: python -m uvicorn app:app --reload --port 8000
+Checks: python -m pytest tests/test_pipeline.py tests/test_server.py
+Browser checks (server running): python -m pytest tests/test_browser.py
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+Keep credentials in .env.local or Vercel. Never log access tokens or cookies.
+Use Plaid Sandbox only. HTML/CSS and the small Plaid SDK callback are embedded
+presentation code in views.py. There is no Node.js or frontend build step.

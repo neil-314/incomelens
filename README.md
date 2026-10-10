@@ -1,84 +1,93 @@
-# IncomeLens
+# IncomeLens — Python
 
-A small app that turns bank transactions into monthly income and cash-flow summaries.
+Income and cash flow from bank transactions, written in Python 3.12 with FastAPI.
 
 **Live app:** https://incomelens-olive.vercel.app
 
 ![Dashboard](docs/dashboard.png)
 
-## Run locally
+## Run it
 
-Use Node.js 22 or newer:
-
-```sh
-npm ci
-npm run dev
-```
-
-Open http://127.0.0.1:3000. Sample data works without any accounts or keys.
-
-## Where the code lives
-
-| File                               | Job                                                            |
-| ---------------------------------- | -------------------------------------------------------------- |
-| `app/page.tsx`                     | Page navigation, data state and connection buttons             |
-| `components/income-chart.tsx`      | Monthly bar chart                                              |
-| `components/transaction-table.tsx` | Search, filters and transaction rows                           |
-| `lib/pipeline.ts`                  | Clean descriptions, classify transactions and calculate totals |
-| `lib/plaid.ts`                     | Server-side Plaid requests and encrypted connection cookie     |
-| `app/api/plaid/route.ts`           | Link, exchange, sync and disconnect actions                    |
-| `app/globals.css`                  | Layout and styling                                             |
-
-There is no database or AI model. The income rules are ordinary TypeScript functions. The chart and both transaction views use the same cleaned records.
-
-## How Plaid Sandbox connects
-
-1. Click **Connect Sandbox**. Our server requests a short-lived Link token from Plaid.
-2. Plaid opens its login window. Choose a test bank and enter fake credentials.
-3. Plaid returns a public token. Our server exchanges it for a private access token.
-4. The server uses that access token to request simulated transactions.
-5. Our cleaning rules process those records and the page updates.
-
-The access token stays in an encrypted HttpOnly cookie. Credentials stay in server environment variables. Nothing here connects to real banks: the server URL is fixed to Plaid Sandbox.
-
-To enable this flow, create a Plaid developer account at https://dashboard.plaid.com/signup. Copy `.env.example` to `.env.local` and fill in `PLAID_CLIENT_ID`, the Sandbox `PLAID_SECRET`, and a random `SESSION_SECRET` of at least 32 characters. Never commit that file or paste secrets into chat. Restart the server after changing environment variables.
-
-In Vercel, add the same variables under **IncomeLens → Settings → Environment Variables**, then redeploy. For a non-OAuth test bank such as First Platypus Bank, the sample login is `user_good` / `pass_good`. If transactions are still being prepared, press **Refresh** after a short wait.
-
-## Calculation rules
-
-- Plaid uses negative amounts for incoming money. A posted credit counts as income if its category or description supports it.
-- Transfers, refunds and pending records are excluded. Unknown credits are flagged for review.
-- Net cash flow means classified income minus expenses. It excludes transfers and unknown credits.
-- Totals are separate by currency. There is no exchange-rate conversion.
-- Stability is `max(0, 100 × (1 − standard deviation / average))`, using completed months with records. It needs at least three months. Months with activity but no income count as zero; absent history is skipped.
-- A source is marked recurring if it appears in three distinct months. This does not predict payday.
-
-Description matching can make mistakes. The current month is partial. The stability score describes observed variation; it does not assess creditworthiness or predict future income. Exported confidence values are fixed rule labels, not statistical probabilities.
-
-## Storage
-
-Transactions live in page memory. Refreshing the page returns to sample data. The connection cookie expires after two hours. While the connection is open, **Refresh** fetches transactions again and **Disconnect** removes the Plaid Item and clears the cookie. **Show sample data** changes the display without disconnecting.
-
-Each sync starts from the initial cursor, applies added/modified/removed records, and retries if Plaid changes pages during pagination. This keeps the example small. A larger app would store a per-user cursor and transaction history in a database.
-
-## Checks
+Install Python 3.12, then:
 
 ```sh
-npm test
-npm run typecheck
-npm run build
-# With npm run dev running in another terminal:
-npx playwright install chromium
-npx playwright test tests/browser.spec.ts --workers=1
+python -m venv .venv
+# Windows:
+.venv\Scripts\activate
+# macOS / Linux: source .venv/bin/activate
+pip install -r requirements.txt
+python -m uvicorn app:app --reload --port 8000
 ```
 
-Tests cover income signs, pending payments, transfers/refunds, duplicates, invalid values, currencies, future dates and incomplete history. Browser checks cover navigation, search, filters, export, missing configuration and mobile layout. GitHub Actions runs unit tests and the production build.
+Open http://127.0.0.1:8000. Sample data works without accounts or secrets.
+
+## Four files to understand
+
+| File | What to read it for |
+| --- | --- |
+| `app.py` | Routes: show a page, export records, connect/disconnect Plaid |
+| `pipeline.py` | Clean descriptions, classify records, calculate monthly totals |
+| `plaid.py` | Call Plaid Sandbox, read its pages, encrypt the connection cookie |
+| `views.py` | Generate the page and bar chart |
+
+Start with `pipeline.py`: `clean_transactions()` turns raw records into labeled records; `analyze()` computes the summaries; `demo_transactions()` supplies example data. These are ordinary functions that use lists and dictionaries.
+
+The page is rendered on the server. Clicking a tab or applying a filter requests another page. The chart is an SVG generated by Python; it needs no chart library. There is no React, Next.js, TypeScript, npm or frontend build step.
+
+**Python-first does not mean browsers run Python.** `views.py` emits HTML and includes a short CSS block for appearance. Its small JavaScript callback opens Plaid's web login window and sends the result to Python. That browser glue is the only application JavaScript; all data processing and page rendering are Python. Keeping it in one file avoids a separate frontend project, though the embedded HTML/CSS still use browser syntax.
+
+## How Sandbox connects
+
+1. Click **Connect Sandbox**. Python requests a Link token from Plaid.
+2. Plaid opens a fake-bank login window.
+3. The browser sends the returned public token to Python.
+4. Python exchanges it for a private access token and encrypts it in an HttpOnly cookie.
+5. Python fetches simulated transactions, applies the rules and renders the page.
+
+Create a developer account at https://dashboard.plaid.com/signup. Copy `.env.example` to `.env.local`, and fill in `PLAID_CLIENT_ID`, the **Sandbox** `PLAID_SECRET`, and a random `SESSION_SECRET` of at least 32 characters. Generate that secret locally with `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Keep the result private. Restart after editing environment variables.
+
+On Vercel, add those same three variables under **IncomeLens → Settings → Environment Variables** and redeploy. Never put them in GitHub, chat, screenshots or logs.
+
+Use a non-OAuth test bank such as First Platypus Bank and sample credentials `user_good` / `pass_good`. If data is still being prepared, press **Refresh** shortly afterward.
+
+## Rules and limits
+
+- Plaid uses negative amounts for incoming money. A posted credit counts as income when its category or description indicates income.
+- Exclude transfers, refunds and pending records. Flag unrecognized credits for review.
+- Deduplicate by transaction ID, keeping the latest version. Invalid dates and non-finite amounts are dropped.
+- Net cash flow is classified income minus expenses; it excludes unknown credits and transfers.
+- Keep currencies separate; no exchange-rate conversion.
+- The chart covers six previous months plus the current partial month.
+- Stability is `max(0, 100 × (1 − standard deviation / average))`. It uses completed months with records and needs at least three. An expense-only month counts as zero income; absent history is skipped.
+- A source is recurring if it appears in three distinct months. Text grouping can merge or split sources incorrectly. This is not a payday forecast or credit assessment.
+
+## Storage and security
+
+There is no database or shared transaction cache. Every Sandbox page request rebuilds transactions from the initial cursor. Additions, modifications and removals are applied; pagination mutations retry from the beginning. Retries and page counts are bounded. This is intentionally simple and less efficient than a database-backed app.
+
+The encrypted connection cookie lasts two hours, is HttpOnly and SameSite=Strict, and uses Secure on Vercel. Private responses are not cached. POST requests check Origin. Descriptions and search input are HTML-escaped. Errors do not include Plaid's private response bodies.
+
+Reloading preserves a valid connection. **Show sample data** changes the display without disconnecting. **Disconnect** revokes the Plaid Item and clears the cookie after Plaid confirms success. If the session has expired, reconnect. The Python cookie format differs from the old Next.js app, so existing connections need to be re-established after migration.
+
+No real banks are supported: the Plaid endpoint is fixed to Sandbox. Live Sandbox ingestion still needs developer credentials and has not been verified against a configured Plaid account. Mocked tests verify the connection, cookie and ingestion logic without real credentials.
+
+## Tests
+
+```sh
+pip install -r requirements-dev.txt
+python -m pytest tests/test_pipeline.py tests/test_server.py
+python -m ruff check app.py pipeline.py plaid.py views.py tests
+# With the local server running:
+python -m playwright install chromium
+python -m pytest tests/test_browser.py
+```
+
+The tests cover cleaning, currency separation, partial history, cents, year boundaries, paginated additions/modifications/removals, retry limits, origin checks, encrypted cookies, HTML escaping, exports and desktop/mobile navigation. GitHub Actions runs these checks with Python.
 
 ## Deployment
 
-The private GitHub repository is connected to the Vercel `incomelens` project. Pushes to `main` trigger a production deployment. No environment variables are needed for sample mode. Live Sandbox ingestion still needs Plaid developer credentials and has not been verified against a configured Plaid account.
+The repository is linked to the existing Vercel project. `vercel.json` selects FastAPI and `.python-version` selects Python 3.12. There is no Node build. Pushes to `main` trigger deployment, or use `vercel deploy --prod`.
 
-This is a Sandbox learning project. Real banking would need user accounts, durable encrypted storage, rate limits, signed webhooks, consent/deletion handling and monitoring.
+The previous TypeScript version is preserved in Git history and the local `before-python-migration` tag. Real banking would require authentication, durable encrypted storage, rate limits, webhook verification and consent/deletion flows.
 
-Docs: https://plaid.com/docs/quickstart/ · https://plaid.com/docs/api/transactions/#transactionssync
+References: https://vercel.com/docs/frameworks/backend/fastapi · https://plaid.com/docs/link/web/ · https://plaid.com/docs/api/transactions/#transactionssync
