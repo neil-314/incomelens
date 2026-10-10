@@ -209,3 +209,16 @@ def render_page(
     )
     if mode == "sandbox" and not rows and view == "overview":
         content = f'<section class="empty"><h3>No transactions available yet</h3><p>Your connection and your transaction history are separate steps. Until records arrive, there is nothing to calculate.</p><p>Try Refresh if Plaid is still preparing history. If this test account is empty, disconnect and try the account in the guide above.</p><a class="button" href="{text(url(mode="demo"))}#analysis">Explore sample data instead →</a></section>'
+    descriptions = {
+        "overview": "Income, spending and payment patterns in the selected dataset. The current month is still in progress.",
+        "transactions": "Check what was counted. Transfers are excluded; unfamiliar credits and pending payments are marked for review.",
+        "pipeline": "Follow a bank record from its original description to its cleaned name and classification. Every result has a rule you can inspect.",
+    }
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IncomeLens</title><style>{STYLE}</style></head><body><main class="container">
+    <header><div><h1>IncomeLens</h1><p>Make sense of the money coming in.</p></div><div class="actions">{buttons}</div></header>
+    {introduction(view, mode, url)}
+    <div class="data-note">{note}</div><p id="message" role="status" class="message" {"" if message else "hidden"}>{text(message)}</p>
+    <nav id="analysis" aria-label="Views">{nav}</nav><div class="section-heading"><h2>{labels[view]}</h2><div class="actions">{currency_form}<a class="button" href="/export?mode={mode}">Export JSON</a></div></div><p class="view-description">{descriptions[view]}</p>
+    {content}<footer><span>Sandbox project · {len(rows)} records · {report["review"]} flagged for review</span><span>Rule-based estimates · currencies are kept separate.</span></footer></main>
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script><script>{PLAID_LOGIN}</script></body></html>"""
+
