@@ -137,6 +137,7 @@ def analyze(records, currency="USD", today=None):
             }
         )
     for month in months:
+        month["has_records"] = month["month"] in observed
         month["income"], month["expenses"] = (
             float(month["income"]),
             float(month["expenses"]),

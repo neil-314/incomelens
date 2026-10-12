@@ -17,11 +17,14 @@ def test_browser():
             page.get_by_role("heading", name="IncomeLens", exact=True)
         ).to_be_visible()
         expect(page.locator("svg rect")).to_have_count(14)
+        page.get_by_text("View exact monthly figures", exact=True).click()
+        expect(page.get_by_role("table", name="Monthly income, expenses and net cash flow (USD)")).to_be_visible()
         page.screenshot(path="docs/dashboard.png", full_page=True)
         with page.expect_download() as download:
             page.get_by_role("link", name="Export JSON").click()
         assert download.value.suggested_filename == "incomelens-cleaned.json"
         page.get_by_role("link", name="Data pipeline", exact=True).click()
+        expect(page.locator(".about-tool")).not_to_have_attribute("open", "")
         page.get_by_label("Classification").select_option("review")
         page.get_by_role("button", name="Apply", exact=True).click()
         expect(page.locator("tbody tr").first).to_contain_text("Unrecognized credit")

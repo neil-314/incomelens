@@ -34,6 +34,16 @@ def test_pages_export_and_missing_configuration(client):
     assert response.headers["cache-control"] == "no-store"
 
 
+def test_overview_exposes_exact_figures_and_other_views_collapse_the_guide(client):
+    overview = client.get("/").text
+    assert "View exact monthly figures" in overview
+    assert "Monthly income, expenses and net cash flow (USD)" in overview
+    assert "Skip to analysis" in overview
+    pipeline = client.get("/?view=pipeline").text
+    assert '<details class="about-tool">' in pipeline
+    assert "Inspect " in pipeline
+
+
 def test_origin_and_body_validation(client):
     assert client.post("/api/plaid", json={"action": "link"}).status_code == 403
     assert (
