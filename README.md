@@ -91,11 +91,3 @@ python -m pytest tests/test_browser.py
 ```
 
 The tests cover cleaning, currency separation, partial history, cents, year boundaries, paginated additions/modifications/removals, retry limits, origin checks, encrypted cookies, HTML escaping, exports and desktop/mobile navigation. GitHub Actions runs these checks with Python.
-
-## Deployment
-
-The repository is linked to the existing Vercel project. `vercel.json` selects FastAPI and `.python-version` selects Python 3.12. There is no Node build. Pushes to `main` trigger deployment, or use `vercel deploy --prod`.
-
-Real banking would require authentication, durable encrypted storage, rate limits, webhook verification and consent/deletion flows.
-
-References: https://vercel.com/docs/frameworks/backend/fastapi · https://plaid.com/docs/link/web/ · https://plaid.com/docs/api/transactions/#transactionssync
