@@ -78,7 +78,7 @@ def overview(report, currency):
         for label, value, note in metrics
     )
     sources = "".join(
-        f'<tr><td>{text(source["source"])}</td><td>{source["count"]}</td><td>{"Recurring · " + str(source["months"]) + " months" if source["recurring"] else "Occasional"}</td><td class="number">{text(money(source["total"], currency))}</td></tr>'
+        f'<tr><td>{text(source["source"])}</td><td>{source["count"]}</td><td>{"Recurring" if source["recurring"] else "Not established"}<small>Matched cleaned source in {source["months"]} distinct months; 3 required.</small></td><td class="number">{text(money(source["total"], currency))}</td></tr>'
         for source in report["sources"]
     )
     if not sources:
@@ -159,8 +159,13 @@ def transaction_table(rows, view, mode, currency, query, kind):
             abs(row["amount"]), row.get("iso_currency_code") or "Unknown currency"
         )
         pending = "<small>Pending</small>" if row.get("pending") else ""
+        assessment = (
+            "Uncertain · excluded from income"
+            if row["kind"] == "review"
+            else "Rule match · not independently verified"
+        )
         body.append(
-            f'<tr><td class="date">{text(row["date"])}{pending}</td><td>{raw_or_source}</td>{extra_source}<td><span class="type {row["kind"]}">{row["kind"]}</span></td><td class="number">{"+" if row["amount"] < 0 else "−"}{text(amount)}</td>{extra_rule}</tr>'
+            f'<tr><td class="date">{text(row["date"])}{pending}</td><td>{raw_or_source}</td>{extra_source}<td><span class="type {row["kind"]}">{row["kind"]}</span><small>{assessment}</small></td><td class="number">{"+" if row["amount"] < 0 else "−"}{text(amount)}</td>{extra_rule}</tr>'
         )
     table = (
         f'<div class="table-scroll"><table><thead><tr><th>Date</th><th>{"Original description" if explain else "Description"}</th>{"<th>Cleaned source</th>" if explain else ""}<th>Type</th><th class="number">Amount</th>{"<th>Rule</th>" if explain else ""}</tr></thead><tbody>{"".join(body)}</tbody></table></div>'

@@ -54,6 +54,31 @@ def test_deduplication_and_validation():
     assert rows[0]["amount"] == -1200
 
 
+def test_two_paychecks_are_income_but_do_not_establish_recurrence():
+    rows = clean_transactions(
+        [
+            raw(),
+            raw(transaction_id="second", date="2026-08-15"),
+            raw(transaction_id="transfer", name="PAYROLL TRANSFER ACME", amount=-500),
+            raw(
+                transaction_id="refund",
+                name="SHOP REFUND",
+                amount=-75,
+                personal_finance_category={"primary": "INCOME"},
+            ),
+        ]
+    )
+    report = analyze(rows, today=date(2026, 8, 20))
+    assert report["current"]["income"] == 2000
+    assert report["sources"][0]["count"] == 2
+    assert report["sources"][0]["months"] == 1
+    assert not report["sources"][0]["recurring"]
+    by_id = {row["transaction_id"]: row for row in rows}
+    assert '"PAYROLL"' in by_id["one"]["reason"]
+    assert '"TRANSFER"' in by_id["transfer"]["reason"]
+    assert '"REFUND"' in by_id["refund"]["reason"]
+
+
 def test_stable_income_currency_and_future_dates():
     rows = [
         raw(transaction_id=month, date=f"2026-{month}-01")

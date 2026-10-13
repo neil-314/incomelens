@@ -35,28 +35,35 @@ def clean_transactions(records):
         name = str(row.get("name", "Unknown transaction"))
         uppercase = name.upper()
         category = (row.get("personal_finance_category") or {}).get("primary", "")
+        transfer_match = re.search(r"TRANSFER|REFUND|REVERSAL|CASHBACK", uppercase)
+        income_match = re.search(r"PAYROLL|SALARY|FREELANCE|CLIENT PAYMENT", uppercase)
         kind, reason = (
             "review",
             "Unrecognized credit; excluded from income until reviewed.",
         )
         if row.get("pending"):
             reason = "Pending transaction; excluded until posted."
-        elif category.startswith("TRANSFER") or re.search(
-            r"TRANSFER|REFUND|REVERSAL|CASHBACK", uppercase
-        ):
-            kind, reason = "transfer", "Transfer or returned money, not earned income."
+        elif category.startswith("TRANSFER") or transfer_match:
+            evidence = (
+                f'category "{category}"'
+                if category.startswith("TRANSFER")
+                else f'description contains "{transfer_match.group()}"'
+            )
+            kind, reason = (
+                "transfer",
+                f"Transfer or returned money: {evidence}; excluded from earned income.",
+            )
         elif amount > 0:
             kind, reason = (
                 "expense",
                 "Positive Plaid amounts represent money leaving the account.",
             )
-        elif amount < 0 and (
-            category == "INCOME"
-            or re.search(r"PAYROLL|SALARY|FREELANCE|CLIENT PAYMENT", uppercase)
-        ):
+        elif amount < 0 and (category == "INCOME" or income_match):
             kind, reason = (
                 "income",
-                "Posted credit with an income category or recognizable income description.",
+                'Posted credit; category "INCOME" matched.'
+                if category == "INCOME"
+                else f'Posted credit; description contains "{income_match.group()}".',
             )
         source = re.sub(
             r"PAYROLL|SALARY|DIRECT DEP(?:OSIT)?|FREELANCE|CLIENT PAYMENT|\*|\d+",
