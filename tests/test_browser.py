@@ -14,7 +14,7 @@ def test_browser():
         page.on("pageerror", lambda error: errors.append(str(error)))
         page.goto(base)
         expect(
-            page.get_by_role("heading", name="IncomeLens", exact=True)
+            page.get_by_role("heading", name="Cashflow Compass", exact=True)
         ).to_be_visible()
         expect(page.locator("svg rect")).to_have_count(14)
         page.get_by_text("View exact monthly figures", exact=True).click()
@@ -22,7 +22,7 @@ def test_browser():
         page.screenshot(path="docs/dashboard.png", full_page=True)
         with page.expect_download() as download:
             page.get_by_role("link", name="Export JSON").click()
-        assert download.value.suggested_filename == "incomelens-cleaned.json"
+        assert download.value.suggested_filename == "cashflow-compass-cleaned.json"
         page.get_by_role("link", name="Data pipeline", exact=True).click()
         expect(page.locator(".about-tool")).not_to_have_attribute("open", "")
         page.get_by_label("Classification").select_option("review")
