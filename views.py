@@ -108,10 +108,10 @@ def introduction(view, mode, url):
     if view != "overview":
         return SANDBOX_GUIDE
     sample_url = text(url(mode="demo", view="overview") + "#analysis")
-    return f"""<section class="intro" aria-label="About Pai Cash Flow">
+    return f"""<section class="intro" aria-label="About Cashflow Compass">
     <div><p class="eyebrow">A financial-data project · test data only</p>
     <h2>Understand income beyond a bank balance.</h2>
-    <p>How much comes in each month? Where does it come from? How much does it vary? Pai Cash Flow turns transaction records into monthly income, expenses and recurring income sources.</p>
+    <p>How much comes in each month? Where does it come from? How much does it vary? Cashflow Compass turns transaction records into monthly income, expenses and recurring income sources.</p>
     <p class="muted">Built to explore how an income-analysis tool could help someone with salary or freelance payments. This public version is a working prototype using simulated data.</p></div>
     <aside class="start"><h3>Start with the sample</h3><p>Explore paychecks, freelance payments and expenses. No account or login needed.</p>
     <a class="button primary" href="{sample_url}">{"Explore the sample below ↓" if mode == "demo" else "Load sample data →"}</a>
@@ -226,12 +226,12 @@ def render_page(
     }
     intro = introduction(view, mode, url)
     if view != "overview":
-        intro = f'<details class="about-tool"><summary>What is Pai Cash Flow? How do I use Sandbox?</summary>{intro}</details>'
+        intro = f'<details class="about-tool"><summary>What is Cashflow Compass? How do I use Sandbox?</summary>{intro}</details>'
     review_link = ""
     if report["review"]:
         review_link = f'<p class="review-note"><a href="{text(url(view="transactions", kind="review"))}#analysis">Inspect {report["review"]} records flagged for review →</a> Unknown credits and pending records are kept out of income totals.</p>'
-    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Pai Cash Flow helps you explore income, expenses, and recurring payments using sample transactions or Plaid Sandbox. Inspect the rules behind every result."><link rel="canonical" href="https://pai-cashflow.vercel.app/"><meta property="og:title" content="Pai Cash Flow"><meta property="og:description" content="Explore income, expenses, and recurring payments with sample data or Plaid Sandbox."><meta property="og:url" content="https://pai-cashflow.vercel.app/"><meta name="twitter:card" content="summary"><title>Pai Cash Flow</title><style>{STYLE}</style></head><body><a class="skip-link" href="#analysis">Skip to analysis</a><main class="container">
-    <header><div><h1>Pai Cash Flow</h1><p>Make sense of the money coming in.</p></div><div class="actions">{buttons}</div></header>
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Cashflow Compass helps you explore income, expenses, and recurring payments using sample transactions or Plaid Sandbox. Inspect the rules behind every result."><link rel="canonical" href="https://cashflow-compass-app.vercel.app/"><meta property="og:title" content="Cashflow Compass"><meta property="og:description" content="Explore income, expenses, and recurring payments with sample data or Plaid Sandbox."><meta property="og:url" content="https://cashflow-compass-app.vercel.app/"><meta name="twitter:card" content="summary"><title>Cashflow Compass</title><style>{STYLE}</style></head><body><a class="skip-link" href="#analysis">Skip to analysis</a><main class="container">
+    <header><div><h1>Cashflow Compass</h1><p>Make sense of the money coming in.</p></div><div class="actions">{buttons}</div></header>
     {intro}
     <div class="data-note">{note}</div><p id="message" role="status" class="message" {"" if message else "hidden"}>{text(message)}</p>
     <nav id="analysis" aria-label="Views">{nav}</nav><div class="section-heading"><h2>{labels[view]}</h2><div class="actions">{currency_form}<a class="button" href="/export?mode={mode}">Export JSON</a></div></div><p class="view-description">{descriptions[view]}</p>
