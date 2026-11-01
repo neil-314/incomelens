@@ -1,4 +1,4 @@
-# IncomeLens development
+# Cashflow Compass development
 
 Python 3.12 app. Business rules: pipeline.py. Plaid: plaid.py.
 Routes: app.py. Presentation: views.py. Use normal functions and dictionaries.
