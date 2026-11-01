@@ -7,7 +7,7 @@ import os
 import httpx
 from cryptography.fernet import Fernet, InvalidToken
 
-COOKIE = "incomelens_python_session"
+COOKIE = "cashflow-compass_python_session"
 
 
 class SandboxError(Exception):
