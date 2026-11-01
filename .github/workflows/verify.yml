@@ -13,5 +13,5 @@ jobs:
       - run: python -m pytest tests/test_pipeline.py tests/test_server.py
       - run: python -m ruff check app.py pipeline.py plaid.py views.py tests
       - run: python -m playwright install --with-deps chromium
-      - run: python -m uvicorn app:app --host 127.0.0.1 --port 8000 > /tmp/incomelens.log 2>&1 &
+      - run: python -m uvicorn app:app --host 127.0.0.1 --port 8000 > /tmp/cashflow-compass.log 2>&1 &
       - run: python -m pytest tests/test_browser.py
