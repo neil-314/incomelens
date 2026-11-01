@@ -1,4 +1,4 @@
-"""Pai Cash Flow web routes. Run with: python -m uvicorn app:app --reload"""
+"""Cashflow Compass web routes. Run with: python -m uvicorn app:app --reload"""
 
 import json
 import os
@@ -94,7 +94,7 @@ async def export(request: Request):
         json.dumps(rows, indent=2),
         media_type="application/json",
         headers={
-            "Content-Disposition": 'attachment; filename="pai-cashflow-cleaned.json"'
+            "Content-Disposition": 'attachment; filename="cashflow-compass-cleaned.json"'
         },
     )
 
@@ -124,7 +124,7 @@ async def plaid_action(request: Request):
             data = await plaid.call(
                 "/link/token/create",
                 {
-                    "client_name": "Pai Cash Flow",
+                    "client_name": "Cashflow Compass",
                     "language": "en",
                     "country_codes": ["US"],
                     "user": {"client_user_id": str(uuid.uuid4())},
