@@ -1,16 +1,16 @@
-# IncomeLens
+# Pai Cash Flow
 
 Understand monthly income, recurring payment sources and cash flow, with rules you can inspect. A server-rendered **Python 3.12 / FastAPI** app using Plaid Sandbox.
 
-**Live app:** https://incomelens-olive.vercel.app
+**Live app:** https://pai-cashflow.vercel.app
 
 ## What to do in the app
 
-IncomeLens explores how bank transactions can answer three questions: how much income arrives each month, where it comes from, and how much it varies. It is a working prototype for salary and freelance income analysis, using simulated records only.
+Pai Cash Flow explores how bank transactions can answer three questions: how much income arrives each month, where it comes from, and how much it varies. It is a working prototype for salary and freelance income analysis, using simulated records only.
 
 Start with the sample dataset; no login is required. Review the Overview, search and filter Transactions, then open Data pipeline to compare original descriptions with cleaned names and classification rules. The page includes a separate Plaid Sandbox guide for testing the bank connection. Test banks may have no transactions or income, so sample data is the easiest way to explore all features. Stability describes past income variation; it is not a credit score or forecast.
 
-![IncomeLens introduction and guide](docs/introduction.jpg)
+![Pai Cash Flow introduction and guide](docs/introduction.jpg)
 
 ## Run it
 
@@ -52,7 +52,7 @@ Python renders each page on the server. Clicking a tab or applying a filter requ
 
 Create a developer account at https://dashboard.plaid.com/signup. Copy `.env.example` to `.env.local`, and fill in `PLAID_CLIENT_ID`, the **Sandbox** `PLAID_SECRET`, and a random `SESSION_SECRET` of at least 32 characters. Generate that secret locally with `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Keep the result private. Restart after editing environment variables.
 
-On Vercel, add those same three variables under **IncomeLens → Settings → Environment Variables** and redeploy. Never put them in GitHub, chat, screenshots or logs.
+On Vercel, add those same three variables under **Pai Cash Flow → Settings → Environment Variables** and redeploy. Never put them in GitHub, chat, screenshots or logs.
 
 For a transaction-focused test account, search for **First Platypus Bank**, use username `user_transactions_dynamic` and password `pass_good`, then select a checking account. If Plaid asks for a phone number, skip the step if offered, or use the Sandbox profile `415-555-0136` with verification code `123456`. No text message will arrive. These are public test details, not real account credentials. See [Plaid's test credentials](https://plaid.com/docs/sandbox/test-credentials/) and [Sandbox phone profiles](https://plaid.com/docs/link/returning-user/#testing-in-sandbox).
 
